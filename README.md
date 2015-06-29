@@ -13,6 +13,7 @@ Sample Unity 5 project demoing Azure [MobileServices](https://github.com/Unity3d
 	* Fill in Azure Mobile Service's Identity > Facebook settings (App Id & App Secret)
 	* Paste [Facebook access user token](https://developers.facebook.com/tools/accesstoken/) into `Scripts/Config.cs`
 4. In Unity3d open scene `Scenes/HighscoresDemo.unity`
+	* Check the Demo UI script is attached to the Camera. (The script can be attached by dragging & dropping the `Scripts/HighscoresDemoUI.cs` script unto the Scene's 'Main Camera' in the Hierarchy panel.)
 	* Play in UnityEditor
 
 ## Azure Mobile Services 
