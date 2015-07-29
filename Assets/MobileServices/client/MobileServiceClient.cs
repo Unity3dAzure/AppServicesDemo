@@ -3,6 +3,11 @@ using System.Collections;
 using RestSharp;
 using System.Collections.Generic;
 using System;
+#if !NETFX_CORE
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
+#endif
 
 namespace Unity3dAzure.MobileServices
 {
@@ -22,6 +27,11 @@ namespace Unity3dAzure.MobileServices
         {
             AppUrl = appUrl;
             AppKey = appKey;
+
+            // required for running in Windows UnityEditor 
+            #if !NETFX_CORE            
+            ServicePointManager.ServerCertificateValidationCallback = RemoteCertificateValidationCallback;
+            #endif
         }
 
         public override string ToString()
@@ -66,5 +76,21 @@ namespace Unity3dAzure.MobileServices
             Debug.Log( "Custom API Request Uri: " + uri );
             this.ExecuteAsync(request, callback);
         }
+
+        #if !NETFX_CORE
+        private bool RemoteCertificateValidationCallback(System.Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            //   Check the certificate to see if it was issued from Azure
+            if ( certificate.Subject.Contains("azurewebsites.net") )
+            {
+                return true;
+            }  
+            else
+            {
+                return false;
+            }
+        }
+        #endif
+
     }
 }
