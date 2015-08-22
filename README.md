@@ -6,17 +6,19 @@ Sample Unity 5 project demoing Azure [MobileServices](https://github.com/Unity3d
 	* Create 'Highscores' table for app data
 	* Modify 'Highscores' table Insert node script to save userId
 	* Create a custom API called 'hello'
-2. Paste Azure Mobile Service app's connection strings into `Scripts/Config.cs`
+2. In Unity3d **open scene** `Scenes/HighscoresDemo.unity`
+	* Check the Demo UI script is attached to the Camera. (The script can be attached by dragging & dropping the `Scripts/HighscoresDemoUI.cs` script unto the Scene's 'Main Camera' in the Hierarchy panel.)
+3. Paste Azure Mobile Service app's connection strings into Unity Editor Inspector fields (or else directly into script `Scripts/HighscoresDemoUI.cs`)
 	* Mobile Service URL
 	* Mobile Service Application Key
-3. [Create Facebook app](https://developers.facebook.com/apps/async/create/platform-setup/dialog/)
+![alt Unity Editor Mobile Services config](https://cloud.githubusercontent.com/assets/1880480/9424523/2a74edb6-48e7-11e5-9e0e-81e5c1acbb53.png)
+4. [Create Facebook app](https://developers.facebook.com/apps/async/create/platform-setup/dialog/)
 	* Fill in Azure Mobile Service's Identity > Facebook settings (App Id & App Secret)
 	* Paste [Facebook access user token](https://developers.facebook.com/tools/accesstoken/) into `Scripts/Config.cs`
-4. In Unity3d open scene `Scenes/HighscoresDemo.unity`
-	* Check the Demo UI script is attached to the Camera. (The script can be attached by dragging & dropping the `Scripts/HighscoresDemoUI.cs` script unto the Scene's 'Main Camera' in the Hierarchy panel.)
+
 	* Play in UnityEditor
 
-## Azure Mobile Services 
+## Azure Mobile Services
 ###Highscores Table **Insert** script
 ```node
 function insert(item, user, request) {
@@ -27,7 +29,7 @@ function insert(item, user, request) {
 }
 ```
 
-## Unity3d 
+## Unity3d
 ### Highscore Demo UI
 * Client-directed login with Facebook
 * Insert Highscore

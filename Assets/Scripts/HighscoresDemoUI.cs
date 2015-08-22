@@ -10,8 +10,18 @@ using Unity3dAzure.MobileServices;
 public class HighscoresDemoUI : MonoBehaviour 
 {
 	/// <remarks>
-	/// Edit Config.cs to add your Azure Mobile Service connection strings
+	/// Enter your Azure Mobile Service connection strings
 	/// </remarks>
+
+	/// Azure Mobile Service connection strings
+	[SerializeField]
+	private string _appUrl = "PASTE_YOUR_APP_URL";
+	[SerializeField]
+	private string _appKey = "PASTE_YOUR_APP_KEY";
+	
+	/// Go to https://developers.facebook.com/tools/accesstoken/ to generate a new access "User Token"
+	[SerializeField]
+	private string _facebookAccessToken = "PASTE_YOUR_USER_TOKEN_HERE";
 	
 	/// Mobile Service Rest Client
 	private MobileServiceClient _client;
@@ -35,7 +45,7 @@ public class HighscoresDemoUI : MonoBehaviour
 		#endif
 		
 		/// Create Mobile Service client
-		_client = new MobileServiceClient(Config.appUrl, Config.appKey);
+		_client = new MobileServiceClient(_appUrl, _appKey);
 		Debug.Log(_client);
 		
 		/// Get Mobile Service 'Highscores' table
@@ -181,7 +191,7 @@ public class HighscoresDemoUI : MonoBehaviour
 	private void DoLogin()
 	{
 		Debug.Log("Login..." );
-		_client.Login(MobileServiceAuthenticationProvider.Facebook, Config.facebookAccessToken, OnLoginCompleted);
+		_client.Login(MobileServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted);
 	}
 	
 	private void OnLoginCompleted(IRestResponse<MobileServiceUser> response)
