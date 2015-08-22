@@ -12,14 +12,18 @@ Sample Unity 5 project demoing Azure [MobileServices](https://github.com/Unity3d
 	* Mobile Service URL
 	* Mobile Service Application Key
 ![alt Unity Editor Mobile Services config](https://cloud.githubusercontent.com/assets/1880480/9424523/2a74edb6-48e7-11e5-9e0e-81e5c1acbb53.png)
-4. [Create Facebook app](https://developers.facebook.com/apps/async/create/platform-setup/dialog/)
+4. If you want to save score with userId then [create Facebook app](https://developers.facebook.com/apps/async/create/platform-setup/dialog/)
 	* Fill in Azure Mobile Service's Identity > Facebook settings (App Id & App Secret)
-	* Paste [Facebook access user token](https://developers.facebook.com/tools/accesstoken/) into `Scripts/Config.cs`
-
+	* Paste [Facebook access user token](https://developers.facebook.com/tools/accesstoken/) into Unity Editor Inspector field (or else directly into `Scripts/HighscoresDemoUI.cs`)
 	* Play in UnityEditor
 
+## Supports
+* iOS
+* Android
+* Windows
+
 ## Azure Mobile Services
-###Highscores Table **Insert** script
+### Highscores Table **Insert** script
 ```node
 function insert(item, user, request) {
     if (user.userId) {
