@@ -3,7 +3,7 @@ using System.Collections;
 using RestSharp;
 using System.Collections.Generic;
 using System;
-#if !NETFX_CORE
+#if !NETFX_CORE || UNITY_ANDROID
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
@@ -28,10 +28,9 @@ namespace Unity3dAzure.MobileServices
             AppUrl = appUrl;
             AppKey = appKey;
 
-            // required for running in Windows
+            // required for running in Windows and Android
             #if !NETFX_CORE || UNITY_ANDROID
-            Debug.Log("ServerCertificateValidation");    
-            //ServicePointManager.ServerCertificateValidationCallback = (p1, p2, p3, p4) => true; // NB: this is a workaround for "Unable to find /System/Library/Frameworks/Security.framework/Security" issue in Android
+            Debug.Log("ServerCertificateValidation");
             ServicePointManager.ServerCertificateValidationCallback = RemoteCertificateValidationCallback;    
             #endif
         }
@@ -79,7 +78,7 @@ namespace Unity3dAzure.MobileServices
             this.ExecuteAsync(request, callback);
         }
 
-        #if !NETFX_CORE
+        #if !NETFX_CORE || UNITY_ANDROID
         private bool RemoteCertificateValidationCallback(System.Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             //   Check the certificate to see if it was issued from Azure
