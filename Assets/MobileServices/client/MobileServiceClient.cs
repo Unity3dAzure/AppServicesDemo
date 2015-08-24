@@ -3,6 +3,11 @@ using System.Collections;
 using RestSharp;
 using System.Collections.Generic;
 using System;
+#if !NETFX_CORE
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
+#endif
 
 namespace Unity3dAzure.MobileServices
 {
@@ -22,6 +27,13 @@ namespace Unity3dAzure.MobileServices
         {
             AppUrl = appUrl;
             AppKey = appKey;
+
+            // required for running in Windows
+            #if !NETFX_CORE || UNITY_ANDROID
+            Debug.Log("ServerCertificateValidation");    
+            //ServicePointManager.ServerCertificateValidationCallback = (p1, p2, p3, p4) => true; // NB: this is a workaround for "Unable to find /System/Library/Frameworks/Security.framework/Security" issue in Android
+            ServicePointManager.ServerCertificateValidationCallback = RemoteCertificateValidationCallback;    
+            #endif
         }
 
         public override string ToString()
@@ -41,7 +53,7 @@ namespace Unity3dAzure.MobileServices
         {
             string uri = "login/" + provider.ToString().ToLower();
             ZumoRequest request = new ZumoRequest(this, uri, Method.POST);
-            Debug.Log( "Login Request Uri: " + uri );
+            Debug.Log("Login Request Uri: " + uri + " access token: " + token);
             request.AddBodyAccessToken(token);
             this.ExecuteAsync(request, callback);
         }
@@ -66,6 +78,21 @@ namespace Unity3dAzure.MobileServices
             Debug.Log( "Custom API Request Uri: " + uri );
             this.ExecuteAsync(request, callback);
         }
+
+        #if !NETFX_CORE
+        private bool RemoteCertificateValidationCallback(System.Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            //   Check the certificate to see if it was issued from Azure
+            if (certificate.Subject.Contains("azurewebsites.net"))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        #endif
 
     }
 }
