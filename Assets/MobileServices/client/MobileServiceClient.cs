@@ -1,8 +1,13 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using RestSharp;
 using System.Collections.Generic;
 using System;
+#if !NETFX_CORE || UNITY_ANDROID
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
+#endif
 
 namespace Unity3dAzure.MobileServices
 {
@@ -22,6 +27,12 @@ namespace Unity3dAzure.MobileServices
         {
             AppUrl = appUrl;
             AppKey = appKey;
+
+            // required for running in Windows and Android
+            #if !NETFX_CORE || UNITY_ANDROID
+            Debug.Log("ServerCertificateValidation");
+            ServicePointManager.ServerCertificateValidationCallback = RemoteCertificateValidationCallback;    
+            #endif
         }
 
     		/// <summary>
@@ -50,7 +61,7 @@ namespace Unity3dAzure.MobileServices
             string p = provider.ToString().ToLower();
             string uri = IsAppService() ? ".auth/login/" + p : "login/" + p;
             ZumoRequest request = new ZumoRequest(this, uri, Method.POST);
-            Debug.Log( "Login Request Uri: " + uri );
+            Debug.Log("Login Request Uri: " + uri + " access token: " + token);
             request.AddBodyAccessToken(token);
             this.ExecuteAsync(request, callback);
         }
@@ -83,6 +94,21 @@ namespace Unity3dAzure.MobileServices
         {
           return String.IsNullOrEmpty(AppKey);
         }
+
+        #if !NETFX_CORE || UNITY_ANDROID
+        private bool RemoteCertificateValidationCallback(System.Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            //   Check the certificate to see if it was issued from Azure
+            if (certificate.Subject.Contains("azurewebsites.net"))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        #endif
 
     }
 }

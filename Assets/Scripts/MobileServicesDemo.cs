@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Net;
 using System.Collections.Generic;
@@ -36,14 +36,7 @@ public class MobileServicesDemo : MonoBehaviour
 	List<Highscore> scores = new List<Highscore>();
 
 	/// Use this for initialization
-	void Start ()
-	{
-		/// NB: Warning this block disables ServerCertificateValidation on Android for demo purposes only!
-		#if UNITY_ANDROID
-			Debug.Log("Warning: Android ServerCertificateValidation disabled.");
-			ServicePointManager.ServerCertificateValidationCallback = (p1, p2, p3, p4) => true; // NB: this is a workaround for "Unable to find /System/Library/Frameworks/Security.framework/Security" issue in Android
-		#endif
-
+	{	
 		/// Create Mobile Service client
 		_client = new MobileServiceClient(_appUrl, _appKey);
 		Debug.Log(_client);
