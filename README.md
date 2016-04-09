@@ -17,9 +17,9 @@ Sample Unity 5 project demoing Azure Mobile Services or Azure App Service for Un
 2. In Unity3d **open scene** `Scenes/MobileServicesDemo.unity`
 	* Check the script `Scripts/MobileServicesDemo.cs` is attached to a game object in the Unity Hierarchy window.
 3. Paste Azure Mobile Service app's connection strings into Unity Editor Inspector fields
+	![alt Unity Editor Mobile Services config](https://cloud.githubusercontent.com/assets/1880480/14404803/c8287754-fe76-11e5-8b0c-7ba729a8c19d.png)
 	* Mobile Service URL
 	* Mobile Service Application Key
-![alt Unity Editor Mobile Services config](https://cloud.githubusercontent.com/assets/1880480/9424523/2a74edb6-48e7-11e5-9e0e-81e5c1acbb53.png)
 4. If you want to save score with userId then [create Facebook app](https://developers.facebook.com/apps/)
 	* Fill in Azure Mobile Service's Identity > Facebook settings (App Id & App Secret)
 	* Paste [Facebook access user token](https://developers.facebook.com/tools/accesstoken/) into Unity Editor Inspector field
@@ -37,18 +37,19 @@ function insert(item, user, request) {
 ```
 
 ## Setup Azure App Services for Unity
-	1. Create an [Azure Mobile App](https://portal.azure.com/)
-		* Create 'Highscores' table for app data
-		* Modify 'Highscores' table Insert node script to save userId
-		* Create a custom API called 'hello'
-	2. In Unity3d **open scene** `Scenes/AppServicesDemo.unity`
-		* Check the script `Scripts/AppServicesDemo.cs` is attached to a game object in the Unity Hierarchy window.
-	3. Paste Azure Mobile Service app's connection strings into Unity Editor Inspector fields
-		* App Service URL (NB: use https)
-	4. If you want to save score with userId then [create Facebook app](https://developers.facebook.com/apps/)
-		* Fill in Azure Mobile Service's Identity > Facebook settings (App Id & App Secret)
-		* Paste [Facebook access user token](https://developers.facebook.com/tools/accesstoken/) into Unity Editor Inspector field
-		* Play in UnityEditor
+1. Create an [Azure Mobile App](https://portal.azure.com/)
+	* Create 'Highscores' table for app data
+	* Modify 'Highscores' table Insert node script to save userId
+	* Create a custom API called 'hello'
+2. In Unity3d **open scene** `Scenes/AppServicesDemo.unity`
+	* Check the script `Scripts/AppServicesDemo.cs` is attached to a game object in the Unity Hierarchy window.
+3. Paste Azure Mobile Service app's connection strings into Unity Editor Inspector fields
+	![alt Unity Editor Mobile Services config](https://cloud.githubusercontent.com/assets/1880480/14404802/c82512da-fe76-11e5-91ad-316fcd70fd5c.png)
+	* App Service URL (NB: use https)
+4. If you want to save score with userId then [create Facebook app](https://developers.facebook.com/apps/)
+	* Fill in Azure Mobile Service's Identity > Facebook settings (App Id & App Secret)
+	* Paste [Facebook access user token](https://developers.facebook.com/tools/accesstoken/) into Unity Editor Inspector field
+	* Play in UnityEditor
 
 ### Azure App Services
 #### Highscores Table **Insert** script
