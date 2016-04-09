@@ -89,7 +89,7 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  bundleIdentifier: net.deadlyfingers.Unity3DAzureDemo
+  bundleIdentifier: net.deadlyfingers.Unity3DAzure
   bundleVersion: 1.0
   preloadedAssets: []
   metroEnableIndependentInputSource: 0

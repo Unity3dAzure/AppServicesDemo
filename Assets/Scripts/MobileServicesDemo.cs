@@ -36,7 +36,10 @@ public class MobileServicesDemo : MonoBehaviour
 	List<Highscore> scores = new List<Highscore>();
 
 	/// Use this for initialization
+	void Start()
 	{	
+		Debug.Log ("Azure Mobile Service Demo");
+
 		/// Create Mobile Service client
 		_client = new MobileServiceClient(_appUrl, _appKey);
 		Debug.Log(_client);
