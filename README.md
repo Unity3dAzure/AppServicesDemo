@@ -55,7 +55,9 @@ function insert(item, user, request) {
 #### Highscores Table **Insert** script
 ```node
 table.insert(function (context) {
-	context.item.userId = context.user.id;
+	if (context.user) {
+		context.item.userId = context.user.id;
+	}
 	return context.execute();
 });
 ```
