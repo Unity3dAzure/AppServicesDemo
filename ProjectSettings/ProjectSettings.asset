@@ -337,7 +337,7 @@ PlayerSettings:
   metroCertificatePassword: 
   metroCertificateSubject: DefaultCompany
   metroCertificateIssuer: DefaultCompany
-  metroCertificateNotAfter: 00cfb99ce6e8d101
+  metroCertificateNotAfter: 00f3207df0b3d201
   metroApplicationDescription: MobileServicesDemo
   wsaImages: {}
   metroTileShortName: 
@@ -353,6 +353,11 @@ PlayerSettings:
   metroSplashScreenUseBackgroundColor: 0
   platformCapabilities:
     WindowsStoreApps:
+      AllJoyn: False
+      BlockedChatMessages: False
+      Bluetooth: False
+      Chat: False
+      CodeGeneration: False
       EnterpriseAuthentication: False
       HumanInterfaceDevice: False
       InternetClient: True
@@ -360,12 +365,16 @@ PlayerSettings:
       Location: False
       Microphone: False
       MusicLibrary: False
+      Objects3D: False
+      PhoneCall: False
       PicturesLibrary: False
       PrivateNetworkClientServer: False
       Proximity: False
       RemovableStorage: False
       SharedUserCertificates: False
+      UserAccountInformation: False
       VideosLibrary: False
+      VoipCall: False
       WebCam: False
   metroFTAName: 
   metroFTAFileTypes: []
