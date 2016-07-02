@@ -3,7 +3,7 @@
 [Oo]bj/
 [Bb]uild/
 
-# Windows 
+# Windows
 UWP/
 Assets/*.pfx
 
@@ -18,9 +18,16 @@ Assets/*.pfx
 *.pidb
 *.booproj
 
-# Unity3D generated meta files
+# Unity3D generated meta files in directories
 *.pidb.meta
 *.meta
 
+# Save .meta files in scenes and scripts folders to prevent missing scripts
+!Assets/[Ss]cenes/*.meta
+!Assets/[Ss]cripts/*.meta
+
 # Unity3D Generated File On Crash Reports
 sysinfo.txt
+
+# OS generated
+.DS_Store

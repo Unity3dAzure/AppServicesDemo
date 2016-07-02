@@ -207,8 +207,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 1578968900}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b62d38dfdae51c4e9bea681efe27f2e, type: 3}
+  m_Script: {fileID: 11500000, guid: 1a7e2f5850bfc4d238a9cc400d26386d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _appUrl: 
-  _facebookAccessToken: 
+  _appUrl: PASTE_YOUR_APP_URL
+  _facebookAccessToken: PASTE_YOUR_USER_TOKEN_HERE
