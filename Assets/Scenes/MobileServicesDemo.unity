@@ -195,12 +195,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1558877018}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8340305ed59aebb49a582098c9d722a2, type: 3}
+  m_Script: {fileID: 11500000, guid: 0af8d25f607ae4e6793156d2bbb12c6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _appUrl: 
-  _appKey: 
-  _facebookAccessToken: 
+  _appUrl: PASTE_YOUR_APP_URL
+  _appKey: PASTE_YOUR_APP_KEY
+  _facebookAccessToken: PASTE_YOUR_USER_TOKEN_HERE
 --- !u!4 &1558877020
 Transform:
   m_ObjectHideFlags: 0
