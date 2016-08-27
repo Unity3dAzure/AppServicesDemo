@@ -9,7 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
 #endif
 
-namespace Unity3dAzure.MobileServices
+namespace Unity3dAzure.AppServices
 {
     public class MobileServiceClient : RestClient, IAzureMobileServiceClient
     {
@@ -22,6 +22,7 @@ namespace Unity3dAzure.MobileServices
 
         /// <summary>
         /// Creates a new RestClient using Azure Mobile Service's Application Url and App Key
+        /// NB: Mobile Services should be migrated to use Azure App Service with constructor below.
         /// </summary>
         public MobileServiceClient(string appUrl, string appKey) : base(appUrl)
         {
@@ -31,7 +32,7 @@ namespace Unity3dAzure.MobileServices
             // required for running in Windows and Android
             #if !NETFX_CORE || UNITY_ANDROID
             Debug.Log("ServerCertificateValidation");
-            ServicePointManager.ServerCertificateValidationCallback = RemoteCertificateValidationCallback;    
+            ServicePointManager.ServerCertificateValidationCallback = RemoteCertificateValidationCallback;
             #endif
         }
 

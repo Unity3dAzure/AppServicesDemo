@@ -4,7 +4,7 @@ using System.Net;
 using System.Collections.Generic;
 using RestSharp;
 using Pathfinding.Serialization.JsonFx;
-using Unity3dAzure.MobileServices;
+using Unity3dAzure.AppServices;
 
 [CLSCompliant(false)]
 public class AppServicesDemo : MonoBehaviour
