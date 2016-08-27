@@ -3,6 +3,9 @@ using System.Collections;
 using RestSharp;
 using System.Collections.Generic;
 using System;
+using System.Text.RegularExpressions;
+
+
 #if !NETFX_CORE || UNITY_ANDROID
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -41,7 +44,8 @@ namespace Unity3dAzure.AppServices
     	/// </summary>
     	public MobileServiceClient(string appUrl) : base(appUrl)
     	{
-            AppUrl = appUrl;
+			AppUrl = appUrl;
+			Debug.Log("AppUrl: " + AppUrl);
 
             // required for running in Windows and Android
             #if !NETFX_CORE || UNITY_ANDROID
@@ -49,6 +53,14 @@ namespace Unity3dAzure.AppServices
             ServicePointManager.ServerCertificateValidationCallback = RemoteCertificateValidationCallback;
             #endif
         }
+
+		/// <summary>
+		/// Using factory method forces app url to be changed from 'http' to 'https' url
+		/// </summary>
+		public static MobileServiceClient Create(string appUrl)
+		{
+			return new MobileServiceClient (ForceHttps (appUrl));
+		}	
 
         public override string ToString()
         {
@@ -93,6 +105,14 @@ namespace Unity3dAzure.AppServices
             Debug.Log( "Custom API Request Uri: " + uri );
             this.ExecuteAsync(request, callback);
         }
+
+		/// <summary>
+		/// When you copy the URL is is 'http' by default, but its preferable to use 'https'
+		/// </summary>
+		private static string ForceHttps(string appUrl) 
+		{
+			return Regex.Replace(appUrl, "(?m)http://", "https://");
+		}
 
         /// <summary>
         /// Mobile Service uses an AppKey, but App Service does not.

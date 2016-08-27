@@ -38,8 +38,8 @@ public class AppServicesDemo : MonoBehaviour
 	{
 		Debug.Log ("Azure App Service");
 
-		/// Create App Service client
-		_client = new MobileServiceClient (_appUrl);
+		/// Create App Service client (Using factory Create method to force 'https' url)
+		_client = MobileServiceClient.Create(_appUrl); //new MobileServiceClient(_appUrl);
 
 		Debug.Log(_client);
 
