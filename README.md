@@ -10,25 +10,23 @@ Sample highscore leaderboard project demoing Azure App Services (previously Mobi
 * Query for username (user's scores)
 
 ## Developer guide
-Read developer guide on [using Azure App Services to create Unity highscores leaderboard](http://www.deadlyfingers.net/azure/azure-app-services-for-unity3d/) for detailed instructions.
+For detailed instructions read blog on how to [setup Azure App Services to create Unity highscores leaderboard](http://www.deadlyfingers.net/azure/azure-app-services-for-unity3d/).
 
 ## Setup Azure App Services for Unity
 1. Create an [Azure Mobile App](https://portal.azure.com/)
 	* Create 'Highscores' table for storing app data using **Easy Tables**.
 2. In Unity open scene "Scenes/HighscoresDemo.unity"
-3. Select the *AppServicesController gameobject* in the Unity Hierarchy window and paste your **Azure App Service URL** into the Editor Inspector field.
+3. Select the *AppServicesController gameobject* in the Unity Hierarchy window and paste your **Azure App Service URL** into the Editor Inspector field.  
 	![alt Unity Editor Mobile Services config](https://cloud.githubusercontent.com/assets/1880480/18139855/0e5fe626-6fab-11e6-8de6-484e3b909cc8.png)
-4. If you wish to save score using Facebook identity:
-	* [Create Facebook app](https://developers.facebook.com/apps/)
-	* Fill in the Azure App Services Authentication settings for Facebook. (Facebook App Id & App Secret required)
-	* Paste [Facebook access user token](https://developers.facebook.com/tools/accesstoken/) into Unity Editor Inspector field
-	* Modify 'Highscores' table 'Insert' node script (using snippet below) to save `userId`
-5. Create optional custom APIs using **Easy APIs**. (Example snippets below)
-	* Create a 'hello' api to say hello!
-	* Create a 'GenerateScores' api to generate 10 random scores.
 
-### Easy Table scripts
-#### 'tables/Highscores.js' **Insert** script
+## Setup Azure App Services with Authentication
+If you wish to save score using Facebook identity:
+1. [Create Facebook app](https://developers.facebook.com/apps/)
+2. Fill in the [Azure App Services](https://portal.azure.com/) Authentication settings with Facebook App Id & App Secret.
+3. Paste [Facebook access user token](https://developers.facebook.com/tools/accesstoken/) into Unity access token field to enable Login button.
+4. Modify 'Highscores' table 'Insert' node script (using snippet below) to save `user.id`
+
+#### **Easy Table Insert** script (*tables/Highscores.js*)
 ```node
 var table = module.exports = require('azure-mobile-apps').table();
 table.insert(function (context) {
@@ -39,8 +37,12 @@ table.insert(function (context) {
 });
 ```
 
-### Easy API scripts
-#### 'api/hello.js' script
+## Setup Azure App Services custom APIs with **Easy APIs**
+With [Azure App Services](https://portal.azure.com/) you can create custom APIs using **Easy APIs**.
+1. Create a 'hello' api to say hello! (Example Easy API message script below)
+2. Create a 'GenerateScores' api to generate 10 random scores. (Example Easy API query script below)
+
+#### Easy API 'hello' script (*api/hello.js*)
 ```node
 module.exports = {
     "get": function (req, res, next) {
@@ -49,7 +51,7 @@ module.exports = {
 }
 ```
 
-#### 'api/GenerateScores.js' script
+#### Easy API 'GenerateScores' script (*api/GenerateScores.js*)
 ```node
 var util = require('util');
 module.exports = {
