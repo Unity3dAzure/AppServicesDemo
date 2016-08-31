@@ -21,6 +21,7 @@ For detailed instructions read blog on how to [setup Azure App Services to creat
 
 ## Setup Azure App Services with Authentication
 If you wish to save score using Facebook identity:
+
 1. [Create Facebook app](https://developers.facebook.com/apps/)
 2. Fill in the [Azure App Services](https://portal.azure.com/) Authentication settings with Facebook App Id & App Secret.
 3. Paste [Facebook access user token](https://developers.facebook.com/tools/accesstoken/) into Unity access token field to enable Login button.
@@ -39,6 +40,7 @@ table.insert(function (context) {
 
 ## Setup Azure App Services custom APIs with **Easy APIs**
 With [Azure App Services](https://portal.azure.com/) you can create custom APIs using **Easy APIs**.
+
 1. Create a 'hello' api to say hello! (Example Easy API message script below)
 2. Create a 'GenerateScores' api to generate 10 random scores. (Example Easy API query script below)
 
