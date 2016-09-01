@@ -87,6 +87,10 @@ namespace Tacticsoft
             m_scrollRect.content.sizeDelta = new Vector2(m_scrollRect.content.sizeDelta[0], 
                 GetCumulativeRowHeight(m_rowHeights.Length - 1) + m_verticalLayoutGroup.padding.vertical);
 
+			// https://bitbucket.org/tacticsoft/tstableview/pull-requests/2/tableviewreloaddata-not-working/diff
+			float relativeScroll = 1 - m_scrollRect.verticalNormalizedPosition;
+			m_scrollY = relativeScroll * scrollableHeight;
+
             RecalculateVisibleRowsFromScratch();
             m_requiresReload = false;
 
