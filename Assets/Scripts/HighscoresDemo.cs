@@ -7,6 +7,7 @@ using Pathfinding.Serialization.JsonFx;
 using Unity3dAzure.AppServices;
 using UnityEngine.UI;
 using Tacticsoft;
+using UnityEngine.SceneManagement;
 
 [CLSCompliant(false)]
 public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
@@ -421,5 +422,12 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		}
 		Highscore score = _scores [index];
 		_score = score;
+	}
+
+	/// <summary>
+	/// Handler to go to next scene
+	/// </summary>
+	public void GoNextScene() {
+		SceneManager.LoadScene ("InventoryDemo");
 	}
 }
