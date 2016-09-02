@@ -1,3 +1,4 @@
+# Unity
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
@@ -22,9 +23,15 @@ Assets/*.pfx
 *.pidb.meta
 *.meta
 
-# Save .meta files in scenes and scripts folders to prevent missing scripts
-!Assets/[Ss]cenes/*.meta
-!Assets/[Ss]cripts/*.meta
+# Save all .meta files in Assets folder and sub directories
+#!Assets/**/*.meta
+
+# Save only .meta files referenced in Unity Editor to prevent missing scripts, prefabs and resources
+!Assets/[Pp]refabs/**/*.meta
+!Assets/[Rr]esources/**/*.meta
+!Assets/[Ss]cenes/**/*.meta
+!Assets/[Ss]cripts/**/*.meta
+!Assets/TSTableView/**/*.meta
 
 # Unity3D Generated File On Crash Reports
 sysinfo.txt

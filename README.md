@@ -1,5 +1,7 @@
-# AppServicesDemo for Unity3d
-Sample highscore leaderboard project demoing Azure App Services (previously Mobile Services) for Unity 5.
+# Azure App Services for Unity3d
+Contains a Unity 5 project featuring two demo scenes for Azure App Services (previously Mobile Services).  
+1. Highscores demo scene
+2. Inventory demo scene
 
 ## Highscore demo features
 * Client-directed login with Facebook
@@ -9,25 +11,32 @@ Sample highscore leaderboard project demoing Azure App Services (previously Mobi
 * Query for today's top ten highscores (daily leaderboard)
 * Query for username (user's scores)
 
-## Developer guide
-For detailed instructions read blog on how to [setup Azure App Services to create Unity highscores leaderboard](http://www.deadlyfingers.net/azure/azure-app-services-for-unity3d/).
+## Inventory demo features
+* Client-directed login with Facebook
+* Load User's inventory.
+* Save User's inventory. (Inserts if new or Updates existing record)
+
+## Developer blogs
+- [How to setup Azure App Services to create Unity highscores leaderboard](http://www.deadlyfingers.net/azure/azure-app-services-for-unity3d/).
 
 ## Setup Azure App Services for Unity
 1. Create an [Azure Mobile App](https://portal.azure.com/)
-	* Create 'Highscores' table for storing app data using **Easy Tables**.
-2. In Unity open scene "Scenes/HighscoresDemo.unity"
-3. Select the *AppServicesController gameobject* in the Unity Hierarchy window and paste your **Azure App Service URL** into the Editor Inspector field.  
+	* Create 'Highscores' and 'Inventory' table for storing app data using **Easy Tables**.
+2. In Unity open scene file(s) inside the *Scenes* folder:  
+	* *HighscoresDemo.unity*
+	* *InventoryDemo.unity*
+3. Then select the *AppServicesController gameobject* in the Unity Hierarchy window and paste your **Azure App Service URL** into the Editor Inspector field.  
 	![alt Unity Editor Mobile Services config](https://cloud.githubusercontent.com/assets/1880480/18139855/0e5fe626-6fab-11e6-8de6-484e3b909cc8.png)
 
 ## Setup Azure App Services with Authentication
-If you wish to save score using Facebook identity:
+This demo uses Facebook identity to save user's highscore or inventory items:
 
 1. [Create Facebook app](https://developers.facebook.com/apps/)
 2. Fill in the [Azure App Services](https://portal.azure.com/) Authentication settings with Facebook App Id & App Secret.
 3. Paste [Facebook access user token](https://developers.facebook.com/tools/accesstoken/) into Unity access token field to enable Login button.
-4. Modify 'Highscores' table 'Insert' node script (using snippet below) to save `user.id`
+4. Modify 'Highscores' and 'Inventory' table script (using 'Insert' snippet below) to save `user.id`
 
-#### **Easy Table Insert** script (*tables/Highscores.js*)
+#### **Easy Table Insert** script (*tables/Highscores.js*, *tables/Inventory.js*)
 ```node
 var table = module.exports = require('azure-mobile-apps').table();
 table.insert(function (context) {
