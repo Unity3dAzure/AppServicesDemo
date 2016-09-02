@@ -257,14 +257,14 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 			return;
 		}
 
+		// Inventory data model properties
 		string[] properties = { "strawberries", "melons", "lemons", "medicine" };
 		foreach (string property in properties) 
 		{
-			if (Utils.HasProperty (_inventory, property)) {
-				var x = Utils.GetProperty(_inventory, property);
+			if (Model.HasProperty (_inventory, property)) {
+				var x = Model.GetProperty(_inventory, property);
 				Nullable<int> value = x.GetValue(_inventory, null) as Nullable<int>;
 				int amount = value ?? 0;
-				Debug.Log ("Row "+ property + " Amount:" + amount);
 				if (amount > 0) {
 					InventoryItem item = new InventoryItem ();
 					item.name = property;
@@ -333,21 +333,3 @@ public class InventoryItem {
 	public int amount;
 }
 
-/// <summary>
-/// Helper methods to check and get object properties
-/// </summary>
-public class Utils {
-	public static bool HasProperty(object obj, string propertyName)
-	{
-		return GetProperty(obj, propertyName) != null;
-	}
-
-	public static PropertyInfo GetProperty(object obj, string propertyName)
-	{
-		#if NETFX_CORE 
-		return obj.GetType().GetTypeInfo().GetDeclaredProperty(propertyName); // workaround for GetProperty on Windows
-		#else
-		return obj.GetType().GetProperty(propertyName);
-		#endif
-	}
-}
