@@ -7,30 +7,31 @@ using Pathfinding.Serialization.JsonFx;
 using Unity3dAzure.AppServices;
 using UnityEngine.UI;
 using Tacticsoft;
+using Prefabs;
 using UnityEngine.SceneManagement;
 
 [CLSCompliant(false)]
 public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 {
 	/// <remarks>
-	/// Enter your Azure App Service connection strings
+	/// Enter your Azure App Service url
 	/// </remarks>
 
 	[Header("Azure App Service")]
-	/// Azure Mobile App connection strings
+	// Azure Mobile App connection strings
 	[SerializeField]
 	private string _appUrl = "PASTE_YOUR_APP_URL";
 
-	/// Go to https://developers.facebook.com/tools/accesstoken/ to generate a new access "User Token"
+	// Go to https://developers.facebook.com/tools/accesstoken/ to generate a new access "User Token"
 	private string _facebookAccessToken;
 
-	/// App Service Rest Client
+	// App Service Rest Client
 	private MobileServiceClient _client;
 
-	/// App Service Table defined using a DataModel
+	// App Service Table defined using a DataModel
 	private MobileServiceTable<Highscore> _table;
 
-	/// List of highscores (leaderboard)
+	// List of highscores (leaderboard)
 	private List<Highscore> _scores = new List<Highscore>();
 
 	private Highscore _score;
@@ -41,15 +42,20 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	private TableView _tableView;
 	[SerializeField]
 	private ScoreCell _cellPrefab;
-	bool HasNewData = false;
+	bool HasNewData = false; // to reload table view when data has changed
 
-	/// Use this for initialization
+	[Space(10)]
+	[SerializeField]
+	private ModalAlert _modalAlert; 
+	private Message _message;
+
+	// Use this for initialization
 	void Start ()
 	{
-		/// Create App Service client (Using factory Create method to force 'https' url)
+		// Create App Service client (Using factory Create method to force 'https' url)
 		_client = MobileServiceClient.Create(_appUrl); //new MobileServiceClient(_appUrl);
 
-		/// Get App Service 'Highscores' table
+		// Get App Service 'Highscores' table
 		_table = _client.GetTable<Highscore>("Highscores");
 
 		// set TSTableView delegate
@@ -58,7 +64,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		UpdateUI();
 	}
 
-	/// Update is called once per frame
+	// Update is called once per frame
 	void Update () 
 	{
 		// Only update table when there is new data
@@ -72,6 +78,12 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 			Debug.Log ("Show score");
 			DisplayScore (_score);
 			_score = null;
+		}
+		// Display modal where there is a new message
+		if (_message != null) {
+			Debug.Log ("Show message:" + _message.message);
+			_modalAlert.Show(_message.message, _message.title);
+			_message = null;
 		}
 	}
 
@@ -94,6 +106,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		else
 		{
 			Debug.Log("Authorization Error: " + response.StatusCode);
+			_message = Message.Create ("Login failed", "Error");
 		}
 	}
 
@@ -168,7 +181,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	{
 		if (response.StatusCode == HttpStatusCode.OK)
 		{
-			Debug.Log("OnReadItemsCompleted data: " + response.Content);
+			Debug.Log("OnReadCompleted data: " + response.ResponseUri +" data: "+ response.Content);
         	List<Highscore> items = response.Data;
         	Debug.Log("Read items count: " + items.Count);
 			_scores = items;
@@ -180,11 +193,28 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		}
 	}
 
+	private void OnReadNestedResultsCompleted(IRestResponse<NestedResults<Highscore>> response)
+	{
+		if (response.StatusCode == HttpStatusCode.OK)
+		{
+			Debug.Log("OnReadNestedResultsCompleted: " + response.ResponseUri +" data: "+ response.Content);
+			List<Highscore> items = response.Data.results;
+			Debug.Log("Read items count: " + items.Count + "/" + response.Data.count);
+			_scores = items;
+			HasNewData = true;
+		}
+		else
+		{
+			Debug.Log("Read Nested Results Error Status:" + response.StatusCode + " Uri: "+response.ResponseUri );
+		}
+	}
+
 	public void GetAllHighscores()
 	{
-		CustomQuery query = CustomQuery.OrderBy ("score desc");
-		Query(query);
+		CustomQuery query = new CustomQuery ("", "score desc", 50, 0, "id,username,score"); //CustomQuery.OrderBy ("score desc");
+		_table.Query<NestedResults<Highscore>>(query, OnReadNestedResultsCompleted); //Query(query);
 	}
+
 
 	public void GetTopHighscores()
 	{
@@ -212,7 +242,36 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	}
 
 	/// <summary>
-	/// This demo 'hello' custom api just gets a response message '{"message":"Hello World!"}'
+	/// This is an example showing how to get an item using it's id. For example if $select columns are specified and the returned data is limited then this can be used to get all the details by using the items's id.
+	/// </summary>
+	public void Lookup()
+	{
+		Highscore score = GetScore ();
+		_table.Lookup<Highscore>(score.id, OnLookupCompleted);
+	}
+
+	private void OnLookupCompleted(IRestResponse<Highscore> response)
+	{
+		Debug.Log("OnLookupItemCompleted: " + response.Content );
+		if (response.StatusCode == HttpStatusCode.OK)
+		{
+			Highscore item = response.Data;
+			_score = item;
+			// show message with some details
+			string message = string.Format ("Scored {0} points on {1}", _score.score, _score.createdAt);
+			_message = Message.Create(message, _score.username);
+		}
+		else
+		{
+			ResponseError err = JsonReader.Deserialize<ResponseError>(response.Content);
+			Debug.Log("Lookup Error Status:" + response.StatusCode + " Code:" + err.code.ToString() + " " + err.error);
+		}
+	}
+
+	#region Easy APIs
+
+	/// <summary>
+	/// This demo 'hello' custom api just gets a response message eg. '{"message":"Hello World!"}'
 	/// </summary>
 	public void Hello()
 	{
@@ -231,6 +290,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 			Debug.Log("OnCustomApiCompleted data: " + response.Content);
        		Message message = response.Data;
 			Debug.Log( "Result: " + message);
+			_message = message;
 		}
 		else
 		{
@@ -238,30 +298,9 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		}
 	}
 
+	#endregion
 
-	/// <summary>
-	/// This is an example showing how to get an item using it's id.
-	/// </summary>
-	private void Lookup()
-	{
-		Highscore score = GetScore ();
-		_table.Lookup<Highscore>(score.id, OnLookupCompleted);
-	}
-
-	private void OnLookupCompleted(IRestResponse<Highscore> response)
-	{
-		Debug.Log("OnLookupItemCompleted: " + response.Content );
-		if (response.StatusCode == HttpStatusCode.OK)
-		{
-			Highscore item = response.Data;
-			_score = item;
-		}
-		else
-		{
-			ResponseError err = JsonReader.Deserialize<ResponseError>(response.Content);
-			Debug.Log("Lookup Error Status:" + response.StatusCode + " Code:" + err.code.ToString() + " " + err.error);
-		}
-	}
+	#region UI
 
 	/// <summary>
 	/// Create data model from UI
@@ -381,7 +420,15 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 			groupInsert.interactable = false;
 			groupUpdate.interactable = true;
 		}
+
+		// Close dialog if no message
+		if (_message == null) 
+		{
+			_modalAlert.Close();
+		}
 	}
+
+	#endregion
 
 	#region ITableViewDataSource
 
@@ -421,7 +468,8 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 			return;
 		}
 		Highscore score = _scores [index];
-		_score = score;
+		Debug.Log ("Selected:" + score.ToString());
+		_score = score; // update editor with selected item
 	}
 
 	/// <summary>

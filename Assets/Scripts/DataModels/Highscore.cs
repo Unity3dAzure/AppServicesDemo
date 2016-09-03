@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System;
+using Unity3dAzure.AppServices;
 
-public class Highscore
+[CLSCompliant(false)]
+public class Highscore : DataModel
 {
-	public string id { get; set; }
+	//public string id { get; set; } // id property is provided when subclassing the DataModel
 
 	public string username { get; set; }
 
@@ -12,6 +14,6 @@ public class Highscore
 	
 	public override string ToString()
 	{
-		return string.Format("username: {1} score: {2} id: {0}", id, username, score );
+		return string.Format("username: {0} score: {1} system properties: {2}", username, score, base.ToString() );
 	}
 }

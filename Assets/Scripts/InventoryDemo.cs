@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using RestSharp;
 using System.Net;
 using Tacticsoft;
-using System.Reflection;
+using Prefabs;
 using UnityEngine.SceneManagement;
 
 [CLSCompliant(false)]
@@ -18,25 +18,25 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 	/// </remarks>
 
 	[Header("Azure App Service")]
-	/// Azure Mobile App connection strings
+	// Azure Mobile App connection strings
 	[SerializeField]
 	private string _appUrl = "PASTE_YOUR_APP_URL";
 
-	/// Go to https://developers.facebook.com/tools/accesstoken/ to generate a new access "User Token"
+	// Go to https://developers.facebook.com/tools/accesstoken/ to generate a new access "User Token"
 	[Header("User Authentication")]
 	[SerializeField]
 	private string _facebookAccessToken = "";
 
-	/// App Service Rest Client
+	// App Service Rest Client
 	private MobileServiceClient _client;
 
-	/// App Service Table defined using a DataModel
+	// App Service Table defined using a DataModel
 	private MobileServiceTable<Inventory> _table;
 
-	/// Data
+	// Data
 	private Inventory _inventory;
 
-	/// List of virtual items (leaderboard)
+	// List of virtual items (inventory)
 	private List<InventoryItem> _items = new List<InventoryItem>();
 
 	[Header("UI")]
@@ -45,16 +45,22 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 	private TableView _tableView;
 	[SerializeField]
 	private InventoryCell _cellPrefab;
-	bool HasNewData = false;
+	bool HasNewData = false; // to reload table view when data has changed
 
+	[Space(10)]
+	[SerializeField]
+	private ModalAlert _modalAlert; 
+	private Message _message;
+
+	// to show user's inventory after successful login
 	bool DidLogin = false;
 
 	// Use this for initialization
 	void Start () {
-		/// Create App Service client (Using factory Create method to force 'https' url)
+		// Create App Service client (Using factory Create method to force 'https' url)
 		_client = MobileServiceClient.Create(_appUrl); //new MobileServiceClient(_appUrl);
 
-		/// Get App Service 'Highscores' table
+		// Get App Service 'Highscores' table
 		_table = _client.GetTable<Inventory>("Inventory");
 
 		// set TSTableView delegate
@@ -77,14 +83,14 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 	// Update is called once per frame
 	void Update () 
 	{
+		// show controls after login
 		if (DidLogin) {
-			// show controls after login
 			CanvasGroup group = GameObject.Find("UserDataGroup").GetComponent<CanvasGroup> ();
 			group.alpha = 1;
 			group.interactable = true;
 			DidLogin = false;
 		}
-
+		// update editor fields and reload table data
 		if (HasNewData && _inventory != null) {
 			InputField strawberries = GameObject.Find("Input1").GetComponent<InputField> ();
 			InputField melons = GameObject.Find("Input2").GetComponent<InputField> ();
@@ -96,6 +102,12 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 			medicine.text = _inventory.medicine.ToString();
 			ReloadTableData ();
 			HasNewData = false;
+		}
+		// Display modal where there is a new message
+		if (_message != null) {
+			Debug.Log ("Show message:" + _message.message);
+			_modalAlert.Show(_message.message, _message.title);
+			_message = null;
 		}
 	}
 
@@ -120,6 +132,7 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 		else
 		{
 			Debug.Log("Authorization Error: " + response.StatusCode);
+			_message = Message.Create ("Login failed", "Error");
 		}
 	}
 
@@ -185,6 +198,7 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 			Debug.Log( "OnInsertItemCompleted: " + response.Data );
 			Inventory item = response.Data; // if successful the item will have an 'id' property value
 			_inventory = item;
+			_message = Message.Create ("Inventory saved", "Inserted"); // show confirmation message
 		}
 		else
 		{
@@ -203,6 +217,7 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 		if (response.StatusCode == HttpStatusCode.OK)
 		{
 			Debug.Log("OnUpdateCompleted: " + response.Content );
+			_message = Message.Create ("Inventory saved", "Updated"); // show confirmation message
 		}
 		else
 		{
@@ -210,7 +225,11 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 		}
 	}
 
+	#region UI
+
+	/// <summary>
 	/// Update inventory using input values
+	/// </summary>
 	private void RecalculateInventoryItems() 
 	{
 		if (_inventory == null) {
@@ -243,6 +262,12 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 		Button login = GameObject.Find("Login").GetComponent<Button> ();
 		_facebookAccessToken = GameObject.Find("FacebookAccessToken").GetComponent<InputField> ().text;
 		login.interactable = String.IsNullOrEmpty (_facebookAccessToken) ? false : true ;
+
+		// Close dialog if no message
+		if (_message == null) 
+		{
+			_modalAlert.Close();
+		}
 	}
 
 	/// <summary>
@@ -261,15 +286,17 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 		string[] properties = { "strawberries", "melons", "lemons", "medicine" };
 		foreach (string property in properties) 
 		{
+			// Check property exists in data model then check amount value
 			if (Model.HasProperty (_inventory, property)) {
 				var x = Model.GetProperty(_inventory, property);
 				Nullable<int> value = x.GetValue(_inventory, null) as Nullable<int>;
 				int amount = value ?? 0;
+				// Only display items with 1 or more
 				if (amount > 0) {
 					InventoryItem item = new InventoryItem ();
 					item.name = property;
 					item.amount = amount;
-					// Add to list
+					// Add to table view list
 					_items.Add(item);
 				}
 			}
@@ -278,6 +305,8 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 		// reload table data
 		_tableView.ReloadData();
 	}
+
+	#endregion
 
 	#region ITableViewDataSource
 

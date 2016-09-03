@@ -37,7 +37,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 224: {fileID: 224000010748435472}
-  - 114: {fileID: 114000010894356006}
+  - 114: {fileID: 114000012629349416}
   m_Layer: 5
   m_Name: InventoryCellPrefab
   m_TagString: Untagged
@@ -96,21 +96,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &114000010894356006
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000012312357288}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 833090a17290e4c3f83e448026c0ccf4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Icon: {fileID: 114000013534120506}
-  Name: {fileID: 114000013939998824}
-  Amount: {fileID: 114000011077488226}
-  Btn: {fileID: 114000011147225522}
 --- !u!114 &114000011077488226
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -196,6 +181,21 @@ MonoBehaviour:
         m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+--- !u!114 &114000012629349416
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012312357288}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 177d64a8e263e4ca990b0b5b61fd989a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Icon: {fileID: 114000013534120506}
+  Name: {fileID: 114000013939998824}
+  Amount: {fileID: 114000011077488226}
+  Btn: {fileID: 114000011147225522}
 --- !u!114 &114000013534120506
 MonoBehaviour:
   m_ObjectHideFlags: 1
