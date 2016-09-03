@@ -22,11 +22,13 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	[SerializeField]
 	private string _appUrl = "PASTE_YOUR_APP_URL";
 
-	// Go to https://developers.facebook.com/tools/accesstoken/ to generate a new access "User Token"
-	private string _facebookAccessToken;
+    // Go to https://developers.facebook.com/tools/accesstoken/ to generate a new access "User Token"
+    [Header("User Authentication")]
+    [SerializeField]
+    private string _facebookAccessToken = "";
 
-	// App Service Rest Client
-	private MobileServiceClient _client;
+    // App Service Rest Client
+    private MobileServiceClient _client;
 
 	// App Service Table defined using a DataModel
 	private MobileServiceTable<Highscore> _table;
@@ -61,7 +63,14 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		// set TSTableView delegate
 		_tableView.dataSource = this;
 
-		UpdateUI();
+        // setup token using Unity Inspector value
+        if (!String.IsNullOrEmpty(_facebookAccessToken))
+        {
+            InputField inputToken = GameObject.Find("FacebookAccessToken").GetComponent<InputField>();
+            inputToken.text = _facebookAccessToken;
+        }
+
+        UpdateUI();
 	}
 
 	// Update is called once per frame
@@ -75,7 +84,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		}
 		// Display new score details 
 		if (_score != null) {
-			Debug.Log ("Show score");
+			Debug.Log ("Show score:" + _score.ToString());
 			DisplayScore (_score);
 			_score = null;
 		}
@@ -218,7 +227,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	public void GetTopHighscores()
 	{
-		DateTime today = DateTime.Today;
+		DateTime today = DateTime.Today.AddDays(-1);
 		string day = today.ToString("s");
 		string filter = string.Format("createdAt gt '{0}Z'", day); //string.Format("score gt {0}", 999);
 		Debug.Log ("filter:" + filter);

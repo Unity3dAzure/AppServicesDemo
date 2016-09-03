@@ -348,7 +348,7 @@ PlayerSettings:
   metroCertificatePassword: 
   metroCertificateSubject: DefaultCompany
   metroCertificateIssuer: DefaultCompany
-  metroCertificateNotAfter: 00b8c2822724d301
+  metroCertificateNotAfter: 005b50d72d25d301
   metroApplicationDescription: MobileServicesDemo
   wsaImages: {}
   metroTileShortName: 

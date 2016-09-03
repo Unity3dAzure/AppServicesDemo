@@ -142,7 +142,7 @@ GameObject:
   - 224: {fileID: 224000011202324464}
   - 114: {fileID: 114000014265073946}
   m_Layer: 5
-  m_Name: Actions
+  m_Name: ButtonActions
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -157,7 +157,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 224000011961785600}
   m_Layer: 5
-  m_Name: Alert
+  m_Name: ModalAlertContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
