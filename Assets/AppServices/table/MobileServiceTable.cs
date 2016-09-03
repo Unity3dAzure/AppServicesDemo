@@ -46,18 +46,18 @@ namespace Unity3dAzure.AppServices
         {
             string uri = string.Format("{0}{1}{2}", URI_TABLES, _name, query);
             ZumoRequest request = new ZumoRequest(_client, uri, Method.GET);
-			Debug.Log( "Query Request: " + uri );
+			Debug.Log( "Query Request: " + uri +" Query:"+ query );
 			_client.ExecuteAsync<List<T>> (request, callback);
         }
 
-		public void NestedQuery<T>(CustomQuery query, Action<IRestResponse<T>> callback = null) where T : INestedResults, new()
+		public void Query<T>(CustomQuery query, Action<IRestResponse<T>> callback = null) where T : INestedResults, new()
 		{
 			string queryResults = query.ToString ();
 			string q = queryResults.Length > 0 ? "&" : "?";
 			queryResults += string.Format("{0}$inlinecount=allpages", q);
 			string uri = string.Format("{0}{1}{2}", URI_TABLES, _name, queryResults);
 			ZumoRequest request = new ZumoRequest(_client, uri, Method.GET);
-			Debug.Log( "Query Request: " + uri +" Query:"+ queryResults );
+			Debug.Log( "Query Request: " + uri +" Query with inlinecount:"+ queryResults );
 			_client.ExecuteAsync<T> (request, callback);
 		}
         

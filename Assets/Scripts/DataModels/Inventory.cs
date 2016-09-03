@@ -22,18 +22,4 @@ public class Inventory
 	{
 		return string.Format("id: {0} inventory: {1},{2},{3},{4}", id, strawberries, melons, lemons, medicine );
 	}
-
-	/*
-	/// <summary>
-	/// Factory method to create empty inventory
-	/// </summary>
-	public static Inventory Create() {
-		Inventory inventory = new Inventory ();
-		inventory.strawberries = 0;
-		inventory.melons = 0;
-		inventory.lemons = 0;
-		inventory.medicine = 0;
-		return inventory;
-	}
-	*/
 }

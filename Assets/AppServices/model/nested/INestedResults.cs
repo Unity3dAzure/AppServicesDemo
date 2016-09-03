@@ -5,7 +5,9 @@ using RestSharp;
 
 namespace Unity3dAzure.AppServices
 {
-	[CLSCompliant(false)]
+	/// <summary>
+	/// Interface to support table Query with `$inlinecount=allpages` 
+	/// </summary>
 	public interface INestedResults
 	{
 	}
