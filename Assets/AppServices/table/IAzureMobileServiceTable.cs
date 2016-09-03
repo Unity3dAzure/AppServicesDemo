@@ -41,6 +41,7 @@ namespace Unity3dAzure.AppServices
         /// https://msdn.microsoft.com/en-us/library/azure/jj677199.aspx
         /// </summary>
         void Query<T>(CustomQuery query, Action<IRestResponse<List<T>>> callback = null) where T : new();
+		void NestedQuery<T>(CustomQuery query, Action<IRestResponse<T>> callback = null) where T : INestedResults, new();
         
         /// <summary>
         /// Get an item's data using id property. 

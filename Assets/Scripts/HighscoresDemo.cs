@@ -180,11 +180,30 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		}
 	}
 
+	private void OnReadNestedResultsCompleted(IRestResponse<NestedResults<Highscore>> response)
+	{
+		if (response.StatusCode == HttpStatusCode.OK)
+		{
+			Debug.Log("OnReadNestedResultsCompleted content: " + response.Content);
+			Debug.Log("OnReadNestedResultsCompleted URI: " + response.ResponseUri);
+			List<Highscore> items = response.Data.results;
+			Debug.Log("Read items count: " + items.Count + "/" + response.Data.count);
+			_scores = items;
+			HasNewData = true;
+		}
+		else
+		{
+			Debug.Log("Read Nested Results Error Status:" + response.StatusCode + " Uri: "+response.ResponseUri );
+		}
+	}
+
 	public void GetAllHighscores()
 	{
-		CustomQuery query = CustomQuery.OrderBy ("score desc");
-		Query(query);
+		CustomQuery query = new CustomQuery ("", "score desc", 50, 1); //CustomQuery.OrderBy ("score desc");
+		//Query(query);
+		_table.NestedQuery<NestedResults<Highscore>>(query, OnReadNestedResultsCompleted);
 	}
+
 
 	public void GetTopHighscores()
 	{

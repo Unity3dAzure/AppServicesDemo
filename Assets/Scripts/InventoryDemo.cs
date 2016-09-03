@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using RestSharp;
 using System.Net;
 using Tacticsoft;
-using System.Reflection;
 using UnityEngine.SceneManagement;
 
 [CLSCompliant(false)]
