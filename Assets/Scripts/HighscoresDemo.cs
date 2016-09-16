@@ -46,6 +46,14 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	private ScoreCell _cellPrefab;
 	bool HasNewData = false; // to reload table view when data has changed
 
+	// infinite scroll vars
+	private const float _infiniteScrollSize = 0.2f;
+	private bool _isLoadingNextPage = false; // load once when scroll buffer is hit
+	private bool _isInfiniteScroll = true; // enable inifine scrolling
+	private const uint _noPageResults = 50;
+	private uint _skip = 0; // no of records to skip
+	private uint _total = _noPageResults; // default is no more records than requested
+
 	[Space(10)]
 	[SerializeField]
 	private ModalAlert _modalAlert; 
@@ -79,7 +87,9 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		// Only update table when there is new data
 		if (HasNewData) {
 			Debug.Log ("Refresh Table Data");
+			SetInteractableScrollbars (false);
 			_tableView.ReloadData ();
+			SetInteractableScrollbars (true);
 			HasNewData = false;
 		}
 		// Display new score details 
@@ -95,6 +105,56 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 			_message = null;
 		}
 	}
+
+	#region Infinite Scroll private methods for Highscores
+
+	void OnEnable()
+	{
+		_tableView.GetComponent<ScrollRect>().onValueChanged.AddListener(OnScrollValueChanged);
+	}
+
+	void OnDisable()
+	{
+		_tableView.GetComponent<ScrollRect>().onValueChanged.RemoveListener(OnScrollValueChanged);
+	}
+
+	private void OnScrollValueChanged(Vector2 newScrollValue)
+	{
+		// skip if not infinite scroll or if still loading next page of results
+		if (!_isInfiniteScroll || _isLoadingNextPage) 
+		{
+			return;
+		}
+		//Debug.Log (string.Format("Scroll y:{0} table view scroll: {1}/{2}", newScrollValue.y, _tableView.scrollY, _tableView.scrollableHeight));
+		float scrollY = _tableView.scrollableHeight - _tableView.scrollY;
+		float scrollBuffer = _infiniteScrollSize * _tableView.scrollableHeight;
+		// scrollY is still at 'top' and so no need to load anything at this point
+		if (scrollY > scrollBuffer)
+		{
+			return;
+		}
+		// scrollY has reached 'bottom' minus buffer size
+		// only trigger request if there are more records to load
+		if (_skip < _total)
+		{
+			_isLoadingNextPage = true;
+			_skip += _noPageResults;
+			Debug.Log (string.Format("Load next page @{0} scroll: {1}<{2}", _skip, scrollY, scrollBuffer));
+			GetPageHighscores ();
+		}
+	}
+
+	// Tip: When infinite scrolling and using TSTableView's ReloadData() method I prefer to wrap "disable and enable scrollbar" calls around it to help prevent jumpy behaviour when continously dragging the scrollbar thumb.
+	private void SetInteractableScrollbars(bool isInteractable)
+	{
+		Scrollbar[] scrollbars = _tableView.GetComponentsInChildren<Scrollbar> ();
+		foreach (Scrollbar scrollbar in scrollbars) {
+			//Debug.Log (string.Format("Scrollbar {0} is {1}",scrollbar.name, isInteractable));
+			scrollbar.interactable = isInteractable;
+		}
+	}
+
+	#endregion
 
 	public void Login()
 	{
@@ -208,22 +268,35 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		{
 			Debug.Log("OnReadNestedResultsCompleted: " + response.ResponseUri +" data: "+ response.Content);
 			List<Highscore> items = response.Data.results;
+			_total = response.Data.count;
 			Debug.Log("Read items count: " + items.Count + "/" + response.Data.count);
-			_scores = items;
+			// append results if paginated, otherwise set 
+			if (_skip != 0) {
+				_scores.AddRange (items);
+			} else {
+				_scores = items;
+			}
 			HasNewData = true;
 		}
 		else
 		{
 			Debug.Log("Read Nested Results Error Status:" + response.StatusCode + " Uri: "+response.ResponseUri );
 		}
+		_isLoadingNextPage = false; // allows next page to be loaded
 	}
 
 	public void GetAllHighscores()
 	{
-		CustomQuery query = new CustomQuery ("", "score desc", 50, 0, "id,username,score"); //CustomQuery.OrderBy ("score desc");
-		_table.Query<NestedResults<Highscore>>(query, OnReadNestedResultsCompleted); //Query(query);
+		// reset
+		_skip = 0;
+		GetPageHighscores();
 	}
 
+	private void GetPageHighscores()
+	{
+		CustomQuery query = new CustomQuery ("", "score desc", _noPageResults, _skip, "id,username,score"); //CustomQuery.OrderBy ("score desc");
+		_table.Query<NestedResults<Highscore>>(query, OnReadNestedResultsCompleted); //Query(query);
+	}
 
 	public void GetTopHighscores()
 	{
