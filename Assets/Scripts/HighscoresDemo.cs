@@ -46,6 +46,14 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	private ScoreCell _cellPrefab;
 	bool HasNewData = false; // to reload table view when data has changed
 
+	// infinite scroll vars
+	private bool _isPaginated = false; // only enable infinite scrolling for paginated results
+	private const float _infiniteScrollSize = 0.2f;
+	private bool _isLoadingNextPage = false; // load once when scroll buffer is hit
+	private const uint _noPageResults = 50;
+	private uint _skip = 0; // no of records to skip
+	private uint _totalCount = 0; // count value should be > 0 to paginate
+
 	[Space(10)]
 	[SerializeField]
 	private ModalAlert _modalAlert; 
@@ -79,7 +87,9 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		// Only update table when there is new data
 		if (HasNewData) {
 			Debug.Log ("Refresh Table Data");
+			SetInteractableScrollbars (false);
 			_tableView.ReloadData ();
+			SetInteractableScrollbars (true);
 			HasNewData = false;
 		}
 		// Display new score details 
@@ -193,6 +203,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 			Debug.Log("OnReadCompleted data: " + response.ResponseUri +" data: "+ response.Content);
         	List<Highscore> items = response.Data;
         	Debug.Log("Read items count: " + items.Count);
+			_isPaginated = false; // default query has max. of 50 records and is not paginated so disable infinite scroll 
 			_scores = items;
 			HasNewData = true;
 		}
@@ -208,26 +219,39 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		{
 			Debug.Log("OnReadNestedResultsCompleted: " + response.ResponseUri +" data: "+ response.Content);
 			List<Highscore> items = response.Data.results;
+			_totalCount = response.Data.count;
 			Debug.Log("Read items count: " + items.Count + "/" + response.Data.count);
-			_scores = items;
+			_isPaginated = true; // nested query will support pagination
+			if (_skip != 0) {
+				_scores.AddRange (items); // append results for paginated results
+			} else {
+				_scores = items; // set for first page of results
+			}
 			HasNewData = true;
 		}
 		else
 		{
 			Debug.Log("Read Nested Results Error Status:" + response.StatusCode + " Uri: "+response.ResponseUri );
 		}
+		_isLoadingNextPage = false; // allows next page to be loaded
 	}
 
 	public void GetAllHighscores()
 	{
-		CustomQuery query = new CustomQuery ("", "score desc", 50, 0, "id,username,score"); //CustomQuery.OrderBy ("score desc");
+		// reset
+		_skip = 0;
+		GetPageHighscores();
+	}
+
+	private void GetPageHighscores()
+	{
+		CustomQuery query = new CustomQuery ("", "score desc", _noPageResults, _skip, "id,username,score"); //CustomQuery.OrderBy ("score desc");
 		_table.Query<NestedResults<Highscore>>(query, OnReadNestedResultsCompleted); //Query(query);
 	}
 
-
 	public void GetTopHighscores()
 	{
-		DateTime today = DateTime.Today.AddDays(-1);
+		DateTime today = DateTime.Today;
 		string day = today.ToString("s");
 		string filter = string.Format("createdAt gt '{0}Z'", day); //string.Format("score gt {0}", 999);
 		Debug.Log ("filter:" + filter);
@@ -439,7 +463,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	#endregion
 
-	#region ITableViewDataSource
+	#region TSTableView ITableViewDataSource
 
 	public int GetNumberOfRowsForTableView(TableView tableView)
 	{
@@ -480,6 +504,56 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		Debug.Log ("Selected:" + score.ToString());
 		_score = score; // update editor with selected item
 	}
+
+	#region Infinite Scroll private methods for Highscores
+
+	void OnEnable()
+	{
+		_tableView.GetComponent<ScrollRect>().onValueChanged.AddListener(OnScrollValueChanged);
+	}
+
+	void OnDisable()
+	{
+		_tableView.GetComponent<ScrollRect>().onValueChanged.RemoveListener(OnScrollValueChanged);
+	}
+
+	private void OnScrollValueChanged(Vector2 newScrollValue)
+	{
+		// skip if not paginated results, or if no items, or if busy already loading next page of results
+		if (!_isPaginated || _totalCount==0 || _isLoadingNextPage) 
+		{
+			return;
+		}
+		//Debug.Log (string.Format("Scroll y:{0} table view scroll: {1}/{2}", newScrollValue.y, _tableView.scrollY, _tableView.scrollableHeight));
+		float scrollY = _tableView.scrollableHeight - _tableView.scrollY;
+		float scrollBuffer = _infiniteScrollSize * _tableView.scrollableHeight;
+		// scrollY is still at 'top' and so no need to load anything at this point
+		if (scrollY > scrollBuffer)
+		{
+			return;
+		}
+		// scrollY has reached 'bottom' minus buffer size
+		// only trigger request if there are more records to load
+		if (_skip < _totalCount)
+		{
+			_isLoadingNextPage = true;
+			_skip += _noPageResults;
+			//Debug.Log (string.Format("Load next page @{0} scroll: {1}<{2}", _skip, scrollY, scrollBuffer));
+			GetPageHighscores ();
+		}
+	}
+
+	// Tip: When infinite scrolling and using TSTableView's ReloadData() method I prefer to wrap "disable and enable scrollbar" calls around it to help prevent jumpy behaviour when continously dragging the scrollbar thumb.
+	private void SetInteractableScrollbars(bool isInteractable)
+	{
+		Scrollbar[] scrollbars = _tableView.GetComponentsInChildren<Scrollbar> ();
+		foreach (Scrollbar scrollbar in scrollbars) {
+			//Debug.Log (string.Format("Scrollbar {0} is {1}",scrollbar.name, isInteractable));
+			scrollbar.interactable = isInteractable;
+		}
+	}
+
+	#endregion
 
 	/// <summary>
 	/// Handler to go to next scene

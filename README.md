@@ -8,7 +8,7 @@ Contains a Unity 5 project featuring two demo scenes for Azure App Services (pre
 * Client-directed login with Facebook
 * Insert Highscore
 * Update Highscore
-* Read list of Highscores (hall of fame)
+* Read list of Highscores using infinite scrolling (hall of fame)
 * Query for today's top ten highscores (daily leaderboard)
 * Query for username (user's scores)
 
