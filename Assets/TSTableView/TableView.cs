@@ -72,6 +72,11 @@ namespace Tacticsoft
             this.isEmpty = m_rowHeights.Length == 0;
             ClearAllRows();
             if (this.isEmpty) {
+				// reset content size when empty
+				var rect = m_scrollRect.content.GetComponent<RectTransform> ();
+				rect.localPosition = Vector2.zero;
+				rect.sizeDelta = Vector2.zero;
+				m_requiresReload = false;
                 return;
             }
             m_cumulativeRowHeights = new float[m_rowHeights.Length];
