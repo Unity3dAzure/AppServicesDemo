@@ -245,15 +245,15 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	private void GetPageHighscores()
 	{
-		CustomQuery query = new CustomQuery ("", "score desc", _noPageResults, _skip, "id,username,score"); //CustomQuery.OrderBy ("score desc");
-		_table.Query<NestedResults<Highscore>>(query, OnReadNestedResultsCompleted); //Query(query);
+		CustomQuery query = new CustomQuery ("", "score desc", _noPageResults, _skip, "id,username,score");
+		_table.Query<NestedResults<Highscore>>(query, OnReadNestedResultsCompleted);
 	}
 
 	public void GetTopHighscores()
 	{
 		DateTime today = DateTime.Today;
 		string day = today.ToString("s");
-		string filter = string.Format("createdAt gt '{0}Z'", day); //string.Format("score gt {0}", 999);
+		string filter = string.Format("createdAt gt '{0}Z'", day);
 		Debug.Log ("filter:" + filter);
 		string orderBy = "score desc";
 		CustomQuery query = new CustomQuery(filter,orderBy,10);
@@ -263,7 +263,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	public void GetUsernameHighscore()
 	{
 		Highscore score = GetScore ();
-		string filter = string.Format("username eq '{0}'", score.username); // string.Format("startswith(username,'{0}')", score.username);
+		string filter = string.Format("username eq '{0}'", score.username);
 		string orderBy = "score desc";
 		CustomQuery query = new CustomQuery(filter,orderBy);
 		Query(query);
@@ -308,12 +308,12 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// </summary>
 	public void Hello()
 	{
-		_client.InvokeApi<Message>("hello", OnCustomApiCompleted);
+		_client.InvokeApi<Message>("hello", Method.GET, OnCustomApiCompleted);
 	}
 
 	public void GenerateScores()
 	{
-		_client.InvokeApi<Message>("GenerateScores", OnCustomApiCompleted);
+		_client.InvokeApi<Message>("GenerateScores", Method.POST, OnCustomApiCompleted);
 	}
 
 	private void OnCustomApiCompleted(IRestResponse<Message> response)
@@ -472,7 +472,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	public float GetHeightForRowInTableView(TableView tableView, int row)
 	{
-		return (_cellPrefab.transform as RectTransform).rect.height; //50.0f;
+		return (_cellPrefab.transform as RectTransform).rect.height;
 	}
 
 	public TableViewCell GetCellForRowInTableView(TableView tableView, int row)

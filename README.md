@@ -51,8 +51,8 @@ table.insert(function (context) {
 ## Setup Azure App Services custom APIs with **Easy APIs**
 With [Azure App Services](https://portal.azure.com/) you can create custom APIs using **Easy APIs**.
 
-1. Create a 'hello' api to say hello! (Example Easy API message script below)
-2. Create a 'GenerateScores' api to generate 10 random scores. (Example Easy API query script below)
+1. Create a 'hello' api (using "get" method) to say hello! (Example Easy API message script below)
+2. Create a 'GenerateScores' api (using "post" method) to generate 10 random scores. (Example Easy API query script below)
 
 #### Easy API 'hello' script (*api/hello.js*)
 ```node
@@ -67,7 +67,7 @@ module.exports = {
 ```node
 var util = require('util');
 module.exports = {
-    "get": function (req, res, next) {
+    "post": function (req, res, next) {
         var insert = "INSERT INTO Highscores (username,score) VALUES ";
         var i = 10;
         while (i--) {
