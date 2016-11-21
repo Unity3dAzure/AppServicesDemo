@@ -3253,8 +3253,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1064423870}
   m_HandleRect: {fileID: 1064423869}
   m_Direction: 0
-  m_Value: 0
-  m_Size: 0.9999999
+  m_Value: 1
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -4242,7 +4242,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dcdeb5277262475c858002ec725ae70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _appUrl: YOUR_APP_URL
+  _appUrl: 
   _facebookAccessToken: 
   _tableView: {fileID: 371080080}
   _cellPrefab: {fileID: 784713177}

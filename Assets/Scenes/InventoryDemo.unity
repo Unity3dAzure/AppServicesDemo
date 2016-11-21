@@ -3165,8 +3165,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1064423870}
   m_HandleRect: {fileID: 1064423869}
   m_Direction: 0
-  m_Value: 0
-  m_Size: 0.9999999
+  m_Value: 1
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -3869,8 +3869,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6cbf7b4bb150744d19a51e4387ac47fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _appUrl: YOUR_APP_URL
-  _facebookAccessToken: 
+  _appUrl: http://unitydemoz.azurewebsites.net
+  _facebookAccessToken: EAAKlV2z3byABACxDSh6Jk7P9c3jLGcmSHqX4GhBN0yiZAOxkAe1bhmp7Du1JItN6azAAcsHQumy2ZCrZCmcRBm5XspH1OYwRmVCGPlxZAO8TTkckBo3OJLfeJQiVgZCg1UxYeX9BC7IB9OXXEH2okFCjKZAJfhlvZCIOZB97WXxZBbwZDZD
   _tableView: {fileID: 371080080}
   _cellPrefab: {fileID: 1760964638}
   _modalAlert: {fileID: 824055199}

@@ -7,7 +7,6 @@ using UnityEngine.UI;
 using Tacticsoft;
 using Prefabs;
 using UnityEngine.SceneManagement;
-//using System.Linq;
 using System.Linq;
 
 public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
@@ -16,72 +15,76 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// Enter your Azure App Service url
 	/// </remarks>
 
-	[Header("Azure App Service")]
+	[Header ("Azure App Service")]
 	// Azure Mobile App connection strings
 	[SerializeField]
 	private string _appUrl = "PASTE_YOUR_APP_URL";
 
-    // Go to https://developers.facebook.com/tools/accesstoken/ to generate a new access "User Token"
-    [Header("User Authentication")]
-    [SerializeField]
-    private string _facebookAccessToken = "";
+	// Go to https://developers.facebook.com/tools/accesstoken/ to generate a new access "User Token"
+	[Header ("User Authentication")]
+	[SerializeField]
+	private string _facebookAccessToken = "";
 
-    // App Service Rest Client
-    private MobileServiceClient _client;
+	// App Service Rest Client
+	private MobileServiceClient _client;
 
 	// App Service Table defined using a DataModel
 	private MobileServiceTable<Highscore> _table;
 
 	// List of highscores (leaderboard)
-	private List<Highscore> _scores = new List<Highscore>();
+	private List<Highscore> _scores = new List<Highscore> ();
 
 	private Highscore _score;
 
-	[Header("UI")]
+	[Header ("UI")]
 	// TSTableView for displaying list of results
 	[SerializeField]
 	private TableView _tableView;
 	[SerializeField]
 	private ScoreCell _cellPrefab;
-	bool HasNewData = false; // to reload table view when data has changed
+	bool HasNewData = false;
+	// to reload table view when data has changed
 
 	// infinite scroll vars
-	private bool _isPaginated = false; // only enable infinite scrolling for paginated results
+	private bool _isPaginated = false;
+	// only enable infinite scrolling for paginated results
 	private const float _infiniteScrollSize = 0.2f;
-	private bool _isLoadingNextPage = false; // load once when scroll buffer is hit
+	private bool _isLoadingNextPage = false;
+	// load once when scroll buffer is hit
 	private const uint _noPageResults = 50;
-	private uint _skip = 0; // no of records to skip
-	private uint _totalCount = 0; // count value should be > 0 to paginate
+	private uint _skip = 0;
+	// no of records to skip
+	private uint _totalCount = 0;
+	// count value should be > 0 to paginate
 
-	[Space(10)]
+	[Space (10)]
 	[SerializeField]
-	private ModalAlert _modalAlert; 
+	private ModalAlert _modalAlert;
 	private Message _message;
 
 	// Use this for initialization
 	void Start ()
 	{
 		// Create App Service client
-		_client = new MobileServiceClient(_appUrl);
+		_client = new MobileServiceClient (_appUrl);
 
 		// Get App Service 'Highscores' table
-		_table = _client.GetTable<Highscore>("Highscores");
+		_table = _client.GetTable<Highscore> ("Highscores");
 
 		// set TSTableView delegate
 		_tableView.dataSource = this;
 
-        // setup token using Unity Inspector value
-        if (!String.IsNullOrEmpty(_facebookAccessToken))
-        {
-            InputField inputToken = GameObject.Find("FacebookAccessToken").GetComponent<InputField>();
-            inputToken.text = _facebookAccessToken;
-        }
+		// setup token using Unity Inspector value
+		if (!String.IsNullOrEmpty (_facebookAccessToken)) {
+			InputField inputToken = GameObject.Find ("FacebookAccessToken").GetComponent<InputField> ();
+			inputToken.text = _facebookAccessToken;
+		}
 
-        UpdateUI();
+		UpdateUI ();
 	}
 
 	// Update is called once per frame
-	void Update () 
+	void Update ()
 	{
 		// Only update table when there is new data
 		if (_tableView != null && HasNewData) {
@@ -93,212 +96,189 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		}
 		// Display new score details 
 		if (_score != null) {
-			Debug.Log ("Show score:" + _score.ToString());
+			Debug.Log ("Show score:" + _score.ToString ());
 			DisplayScore (_score);
 			_score = null;
 		}
 		// Display modal where there is a new message
 		if (_message != null) {
 			Debug.Log ("Show message:" + _message.message);
-			_modalAlert.Show(_message.message, _message.title);
+			_modalAlert.Show (_message.message, _message.title);
 			_message = null;
 		}
 	}
 
-	public void Login()
+	public void Login ()
 	{
-		StartCoroutine( _client.Login(MobileServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted) );
+		StartCoroutine (_client.Login (MobileServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted));
 	}
 
-	private void OnLoginCompleted(IRestResponse<MobileServiceUser> response)
+	private void OnLoginCompleted (IRestResponse<MobileServiceUser> response)
 	{
-		Debug.Log("Status: " + response.StatusCode + " Uri:" + response.Url );
-		Debug.Log("OnLoginCompleted: " + response.Content );
+		Debug.Log ("Status: " + response.StatusCode + " Uri:" + response.Url);
+		Debug.Log ("OnLoginCompleted: " + response.Content);
 
-		if ( response.StatusCode == HttpStatusCode.OK)
-		{
+		if (response.StatusCode == HttpStatusCode.OK) {
 			MobileServiceUser mobileServiceUser = response.Data;
 			_client.User = mobileServiceUser;
-			Debug.Log("Authorized UserId: " + _client.User.user.userId );
-		}
-		else
-		{
-			Debug.Log("Authorization Error: " + response.StatusCode);
+			Debug.Log ("Authorized UserId: " + _client.User.user.userId);
+		} else {
+			Debug.Log ("Authorization Error: " + response.StatusCode);
 			_message = Message.Create ("Login failed", "Error");
 		}
 	}
 
-	public void Insert()
+	public void Insert ()
 	{
 		Highscore score = GetScore ();
-		if ( Validate(score) )
-		{
-			StartCoroutine( _table.Insert<Highscore>(score, OnInsertCompleted) );
+		if (Validate (score)) {
+			StartCoroutine (_table.Insert<Highscore> (score, OnInsertCompleted));
 		}
 	}
 
-	private void OnInsertCompleted(IRestResponse<Highscore> response)
+	private void OnInsertCompleted (IRestResponse<Highscore> response)
 	{
-		if (response.StatusCode == HttpStatusCode.Created)
-		{
-			Debug.Log( "OnInsertItemCompleted: " + response.Data );
-        	Highscore item = response.Data; // if successful the item will have an 'id' property value
+		if (response.StatusCode == HttpStatusCode.Created) {
+			Debug.Log ("OnInsertItemCompleted: " + response.Data);
+			Highscore item = response.Data; // if successful the item will have an 'id' property value
 			_score = item;
-		}
-		else
-		{
-			Debug.Log("Insert Error Status:" + response.StatusCode + " Uri: "+response.Url );
+		} else {
+			Debug.Log ("Insert Error Status:" + response.StatusCode + " Uri: " + response.Url);
 		}
 	}
 
-	public void UpdateScore()
+	public void UpdateScore ()
 	{
 		Highscore score = GetScore ();
-		if ( Validate(score) )
-		{
-			StartCoroutine( _table.Update<Highscore>(score, OnUpdateScoreCompleted) );
+		if (Validate (score)) {
+			StartCoroutine (_table.Update<Highscore> (score, OnUpdateScoreCompleted));
 		}
 	}
 
-	private void OnUpdateScoreCompleted(IRestResponse<Highscore> response)
+	private void OnUpdateScoreCompleted (IRestResponse<Highscore> response)
 	{
-		if (response.StatusCode == HttpStatusCode.OK)
-		{
-			Debug.Log("OnUpdateItemCompleted: " + response.Content );
-		}
-		else
-		{
-			Debug.Log("Update Error Status:" + response.StatusCode +" "+ response.ErrorMessage + " Uri: "+response.Url );
+		if (response.StatusCode == HttpStatusCode.OK) {
+			Debug.Log ("OnUpdateItemCompleted: " + response.Content);
+		} else {
+			Debug.Log ("Update Error Status:" + response.StatusCode + " " + response.ErrorMessage + " Uri: " + response.Url);
 		}
 	}
 
-	public void Delete()
+	public void Delete ()
 	{
 		Highscore score = GetScore ();
-		StartCoroutine( _table.Delete<Highscore>(score.id, OnDeleteCompleted) );
+		StartCoroutine (_table.Delete<Highscore> (score.id, OnDeleteCompleted));
 	}
 
-	private void OnDeleteCompleted(IRestResponse<Highscore> response)
+	private void OnDeleteCompleted (IRestResponse<Highscore> response)
 	{
-		if (response.StatusCode == HttpStatusCode.OK)
-		{
-			Debug.Log("OnDeleteItemCompleted");
-		}
-		else
-		{
-			Debug.Log("Delete Error Status:" + response.StatusCode +" "+ response.ErrorMessage + " Uri: "+response.Url );
+		if (response.StatusCode == HttpStatusCode.OK) {
+			Debug.Log ("OnDeleteItemCompleted");
+		} else {
+			Debug.Log ("Delete Error Status:" + response.StatusCode + " " + response.ErrorMessage + " Uri: " + response.Url);
 		}
 	}
 
-	public void Read()
+	public void Read ()
 	{
-		StartCoroutine (_table.Read<Highscore> (OnReadCompleted) );
+		StartCoroutine (_table.Read<Highscore> (OnReadCompleted));
 	}
 
-	private void OnReadCompleted(IRestResponse<Highscore[]> response)
+	private void OnReadCompleted (IRestResponse<Highscore[]> response)
 	{
-		if ( response.StatusCode.Equals( HttpStatusCode.OK ) )
-		{
-			Debug.Log("OnReadCompleted data: " + response.Url +" data: "+ response.Content);
-        	Highscore[] items = response.Data;
-			Debug.Log("Read items count: " + items.Length);
+		if (response.StatusCode.Equals (HttpStatusCode.OK)) {
+			Debug.Log ("OnReadCompleted data: " + response.Url + " data: " + response.Content);
+			Highscore[] items = response.Data;
+			Debug.Log ("Read items count: " + items.Length);
 			_isPaginated = false; // default query has max. of 50 records and is not paginated so disable infinite scroll 
-			_scores = items.ToList();
+			_scores = items.ToList ();
 			HasNewData = true;
-		}
-		else
-		{
-			Debug.Log("Read Error Status:" + response.StatusCode + " Uri: "+response.Url );
+		} else {
+			Debug.Log ("Read Error Status:" + response.StatusCode + " Uri: " + response.Url);
 		}
 	}
 
-	private void OnReadNestedResultsCompleted(IRestResponse<NestedResults<Highscore>> response)
+	private void OnReadNestedResultsCompleted (IRestResponse<NestedResults<Highscore>> response)
 	{
 		Debug.Log (response.StatusCode + " CALLBACK: " + response.Content);
-		if ( response.StatusCode.Equals( HttpStatusCode.OK ))
-		{
-			Debug.Log("OnReadNestedResultsCompleted: " + response.Url +" data: "+ response.Content);
+		if (response.StatusCode.Equals (HttpStatusCode.OK)) {
+			Debug.Log ("OnReadNestedResultsCompleted: " + response.Url + " data: " + response.Content);
 			Highscore[] items = response.Data.results;
 			_totalCount = response.Data.count;
-			Debug.Log("Read items count: " + items.Length + "/" + response.Data.count);
+			Debug.Log ("Read items count: " + items.Length + "/" + response.Data.count);
 			_isPaginated = true; // nested query will support pagination
 			if (_skip != 0) {
-				Debug.Log("TODO: append paginated results");
-				_scores.AddRange ( items.ToList() );
+				Debug.Log ("TODO: append paginated results");
+				_scores.AddRange (items.ToList ());
 			} else {
-				_scores = items.ToList(); // set for first page of results
+				_scores = items.ToList (); // set for first page of results
 			}
 			HasNewData = true;
-		}
-		else
-		{
-			Debug.Log("Read Nested Results Error Status:" + response.StatusCode.ToString() + " Uri: "+response.Url );
+		} else {
+			Debug.Log ("Read Nested Results Error Status:" + response.StatusCode.ToString () + " Uri: " + response.Url);
 		}
 		_isLoadingNextPage = false; // allows next page to be loaded
 	}
 
-	public void GetAllHighscores()
+	public void GetAllHighscores ()
 	{
 		// reset
 		_skip = 0;
-		GetPageHighscores();
+		GetPageHighscores ();
 	}
 
-	private void GetPageHighscores()
+	private void GetPageHighscores ()
 	{
 		CustomQuery query = new CustomQuery ("", "score desc", _noPageResults, _skip, "id,username,score");
-		StartCoroutine( _table.Query<NestedResults<Highscore>>(query, OnReadNestedResultsCompleted) );
+		StartCoroutine (_table.Query<NestedResults<Highscore>> (query, OnReadNestedResultsCompleted));
 	}
-	
-	public void GetTopHighscores()
+
+	public void GetTopHighscores ()
 	{
 		DateTime today = DateTime.Today;
-		string day = today.ToString("s");
-		string filter = string.Format("createdAt gt '{0}Z'", day);
+		string day = today.ToString ("s");
+		string filter = string.Format ("createdAt gt '{0}Z'", day);
 		Debug.Log ("filter:" + filter);
 		string orderBy = "score desc";
-		CustomQuery query = new CustomQuery(filter,orderBy,10);
-		Query(query);
+		CustomQuery query = new CustomQuery (filter, orderBy, 10);
+		Query (query);
 	}
 
-	public void GetUsernameHighscore()
+	public void GetUsernameHighscore ()
 	{
 		Highscore score = GetScore ();
-		string filter = string.Format("username eq '{0}'", score.username);
+		string filter = string.Format ("username eq '{0}'", score.username);
 		string orderBy = "score desc";
-		CustomQuery query = new CustomQuery(filter,orderBy);
-		Query(query);
+		CustomQuery query = new CustomQuery (filter, orderBy);
+		Query (query);
 	}
 
-	private void Query(CustomQuery query)
+	private void Query (CustomQuery query)
 	{
-		StartCoroutine( _table.Query<Highscore>(query, OnReadCompleted) );
+		StartCoroutine (_table.Query<Highscore> (query, OnReadCompleted));
 	}
 
 	/// <summary>
 	/// This is an example showing how to get an item using it's id. For example if $select columns are specified and the returned data is limited then this can be used to get all the details by using the items's id.
 	/// </summary>
-	public void Lookup()
+	public void Lookup ()
 	{
 		Highscore score = GetScore ();
-		StartCoroutine( _table.Lookup<Highscore>(score.id, OnLookupCompleted) );
+		StartCoroutine (_table.Lookup<Highscore> (score.id, OnLookupCompleted));
 	}
 
-	private void OnLookupCompleted(IRestResponse<Highscore> response)
+	private void OnLookupCompleted (IRestResponse<Highscore> response)
 	{
-		Debug.Log("OnLookupItemCompleted: " + response.Content );
-		if (response.StatusCode == HttpStatusCode.OK)
-		{
+		Debug.Log ("OnLookupItemCompleted: " + response.Content);
+		if (response.StatusCode == HttpStatusCode.OK) {
 			Highscore item = response.Data;
 			_score = item;
 			// show message with some details
-			string message = string.Format ("Scored {0} points on {1}", _score.score, _score.CreatedAt());
-			_message = Message.Create(message, _score.username);
-		}
-		else
-		{
+			string message = string.Format ("Scored {0} points on {1}", _score.score, _score.CreatedAt ());
+			_message = Message.Create (message, _score.username);
+		} else {
 			//ResponseError err = JsonReader.Deserialize<ResponseError>(response.Content);
-			Debug.Log("Lookup Error Status:" + response.StatusCode );
+			Debug.Log ("Lookup Error Status:" + response.StatusCode);
 		}
 	}
 
@@ -307,30 +287,28 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// <summary>
 	/// This demo 'hello' custom api just gets a response message eg. '{"message":"Hello World!"}'
 	/// </summary>
-	public void Hello()
+	public void Hello ()
 	{
-		StartCoroutine( _client.InvokeApi<Message>("hello", Method.GET, OnCustomApiCompleted) );
+		StartCoroutine (_client.InvokeApi<Message> ("hello", Method.GET, OnCustomApiCompleted));
 	}
 
-	public void GenerateScores()
+	public void GenerateScores ()
 	{
-		StartCoroutine( _client.InvokeApi<Message>("GenerateScores", Method.POST, OnCustomApiCompleted) );
+		StartCoroutine (_client.InvokeApi<Message> ("GenerateScores", Method.POST, OnCustomApiCompleted));
 	}
 
-	private void OnCustomApiCompleted(IRestResponse<Message> response)
+	private void OnCustomApiCompleted (IRestResponse<Message> response)
 	{
-		if (response.StatusCode == HttpStatusCode.OK)
-		{
-			Debug.Log("OnCustomApiCompleted data: " + response.Content);
-       		Message message = response.Data;
-			Debug.Log( "Result: " + message);
+		if (response.StatusCode == HttpStatusCode.OK) {
+			Debug.Log ("OnCustomApiCompleted data: " + response.Content);
+			Message message = response.Data;
+			Debug.Log ("Result: " + message);
 			_message = message;
-		}
-		else
-		{
-			Debug.Log("Api Error Status:" + response.StatusCode + " Uri: "+response.Url );
+		} else {
+			Debug.Log ("Api Error Status:" + response.StatusCode + " Uri: " + response.Url);
 		}
 	}
+
 	#endregion
 
 	#region UI
@@ -338,12 +316,12 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// <summary>
 	/// Create data model from UI
 	/// </summary>
-	private Highscore GetScore() 
+	private Highscore GetScore ()
 	{
-		string name = GameObject.Find("InputName").GetComponent<InputField> ().text;
-		string score = GameObject.Find("InputScore").GetComponent<InputField> ().text;
-		string id = GameObject.Find("Id").GetComponent<Text> ().text;
-		Highscore highscore = new Highscore();
+		string name = GameObject.Find ("InputName").GetComponent<InputField> ().text;
+		string score = GameObject.Find ("InputScore").GetComponent<InputField> ().text;
+		string id = GameObject.Find ("Id").GetComponent<Text> ().text;
+		Highscore highscore = new Highscore ();
 		highscore.username = name;
 		if (!String.IsNullOrEmpty (score)) {
 			highscore.score = Convert.ToUInt32 (score);
@@ -358,11 +336,11 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// <summary>
 	/// Update UI with data model 
 	/// </summary>
-	private void DisplayScore(Highscore highscore) 
+	private void DisplayScore (Highscore highscore)
 	{
-		InputField name = GameObject.Find("InputName").GetComponent<InputField> ();
-		InputField score = GameObject.Find("InputScore").GetComponent<InputField> ();
-		Text id = GameObject.Find("Id").GetComponent<Text> ();
+		InputField name = GameObject.Find ("InputName").GetComponent<InputField> ();
+		InputField score = GameObject.Find ("InputScore").GetComponent<InputField> ();
+		Text id = GameObject.Find ("Id").GetComponent<Text> ();
 		name.text = highscore.username;
 		score.text = highscore.score.ToString ();
 		id.text = highscore.id;
@@ -372,10 +350,11 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// <summary>
 	/// Reset UI to insert new score
 	/// </summary>
-	public void ClearScore() {
-		InputField name = GameObject.Find("InputName").GetComponent<InputField> ();
-		InputField score = GameObject.Find("InputScore").GetComponent<InputField> ();
-		Text id = GameObject.Find("Id").GetComponent<Text> ();
+	public void ClearScore ()
+	{
+		InputField name = GameObject.Find ("InputName").GetComponent<InputField> ();
+		InputField score = GameObject.Find ("InputScore").GetComponent<InputField> ();
+		Text id = GameObject.Find ("Id").GetComponent<Text> ();
 		name.text = "";
 		score.text = "";
 		id.text = "";
@@ -385,17 +364,16 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// <summary>
 	/// Validate data before sending
 	/// </summary>
-	private bool Validate(Highscore highscore)
+	private bool Validate (Highscore highscore)
 	{
-		bool isUsernameValid=true, isScoreValid=true;
+		bool isUsernameValid = true, isScoreValid = true;
 		// Validate username
 		if (String.IsNullOrEmpty (highscore.username)) {
 			isUsernameValid = false;
 			Debug.Log ("Error, player username required");
 		}
 		// Validate score
-		if ( !(highscore.score > 0) )
-		{
+		if (!(highscore.score > 0)) {
 			isScoreValid = false;
 			Debug.Log ("Error, player score should be greater than 0");
 		}
@@ -407,9 +385,9 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// <summary>
 	/// Change text color to highlight errors
 	/// </summary>
-	private void UpdateText(string gameObjectName, bool isValid=true)
+	private void UpdateText (string gameObjectName, bool isValid = true)
 	{
-		Text text = GameObject.Find(gameObjectName).GetComponent<Text> ();
+		Text text = GameObject.Find (gameObjectName).GetComponent<Text> ();
 		if (text) {
 			text.color = isValid ? Color.white : Color.red;
 		}
@@ -418,7 +396,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// <summary>
 	/// Handler for text changed event to update view state
 	/// </summary>
-	public void TextChanged() 
+	public void TextChanged ()
 	{
 		UpdateUI ();
 	}
@@ -426,28 +404,25 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// <summary>
 	/// Method to manage UI view state
 	/// </summary>
-	private void UpdateUI() 
+	private void UpdateUI ()
 	{
 		// Activate login button if Facebook Access Token is entered
-		Button login = GameObject.Find("Login").GetComponent<Button> ();
-		_facebookAccessToken = GameObject.Find("FacebookAccessToken").GetComponent<InputField> ().text;
-		login.interactable = String.IsNullOrEmpty (_facebookAccessToken) ? false : true ;
+		Button login = GameObject.Find ("Login").GetComponent<Button> ();
+		_facebookAccessToken = GameObject.Find ("FacebookAccessToken").GetComponent<InputField> ().text;
+		login.interactable = String.IsNullOrEmpty (_facebookAccessToken) ? false : true;
 
 		// Insert or Update mode
-		Text id = GameObject.Find("Id").GetComponent<Text> ();
-		GameObject insert = GameObject.Find("GroupInsert");
-		GameObject update = GameObject.Find("GroupUpdate");
+		Text id = GameObject.Find ("Id").GetComponent<Text> ();
+		GameObject insert = GameObject.Find ("GroupInsert");
+		GameObject update = GameObject.Find ("GroupUpdate");
 		CanvasGroup groupInsert = insert.GetComponent<CanvasGroup> ();
 		CanvasGroup groupUpdate = update.GetComponent<CanvasGroup> ();
-		if ( String.IsNullOrEmpty(id.text) )
-		{
+		if (String.IsNullOrEmpty (id.text)) {
 			groupInsert.alpha = 1; 
 			groupUpdate.alpha = 0;
 			groupInsert.interactable = true;
 			groupUpdate.interactable = false;
-		} 
-		else 
-		{
+		} else {
 			groupInsert.alpha = 0; 
 			groupUpdate.alpha = 1;
 			groupInsert.interactable = false;
@@ -455,9 +430,8 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		}
 
 		// Close dialog if no message
-		if (_message == null) 
-		{
-			_modalAlert.Close();
+		if (_message == null) {
+			_modalAlert.Close ();
 		}
 	}
 
@@ -465,27 +439,27 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	#region TSTableView ITableViewDataSource
 
-	public int GetNumberOfRowsForTableView(TableView tableView)
+	public int GetNumberOfRowsForTableView (TableView tableView)
 	{
 		return _scores.Count;
 	}
 
-	public float GetHeightForRowInTableView(TableView tableView, int row)
+	public float GetHeightForRowInTableView (TableView tableView, int row)
 	{
 		return (_cellPrefab.transform as RectTransform).rect.height;
 	}
 
-	public TableViewCell GetCellForRowInTableView(TableView tableView, int row)
+	public TableViewCell GetCellForRowInTableView (TableView tableView, int row)
 	{
-		ScoreCell cell = tableView.GetReusableCell(_cellPrefab.reuseIdentifier) as ScoreCell;
+		ScoreCell cell = tableView.GetReusableCell (_cellPrefab.reuseIdentifier) as ScoreCell;
 		if (cell == null) {
 			cell = (ScoreCell)GameObject.Instantiate (_cellPrefab);
 		}
 		Highscore data = _scores [row];
 		cell.Name.text = data.username;
-		cell.Score.text = data.score.ToString();
-		cell.Rank.text = (row+1).ToString();
-		cell.Btn.name = row.ToString(); // save index to button name
+		cell.Score.text = data.score.ToString ();
+		cell.Rank.text = (row + 1).ToString ();
+		cell.Btn.name = row.ToString (); // save index to button name
 		return cell;
 	}
 
@@ -494,50 +468,48 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// <summary>
 	/// Handler to get selected row item
 	/// </summary>
-	public void OnSelectedRow(Button button) {
+	public void OnSelectedRow (Button button)
+	{
 		int index = Convert.ToInt32 (button.name);
 		//Debug.Log("Selected index:" + index); //Count
 		if (index >= _scores.Count) {
 			return;
 		}
 		Highscore score = _scores [index];
-		Debug.Log ("Selected:" + score.ToString());
+		Debug.Log ("Selected:" + score.ToString ());
 		_score = score; // update editor with selected item
 	}
 
 	#region Infinite Scroll private methods for Highscores
 
-	void OnEnable()
+	void OnEnable ()
 	{
-		_tableView.GetComponent<ScrollRect>().onValueChanged.AddListener(OnScrollValueChanged);
+		_tableView.GetComponent<ScrollRect> ().onValueChanged.AddListener (OnScrollValueChanged);
 	}
 
-	void OnDisable()
+	void OnDisable ()
 	{
 		if (_tableView != null) {
-			_tableView.GetComponent<ScrollRect>().onValueChanged.RemoveListener(OnScrollValueChanged);
+			_tableView.GetComponent<ScrollRect> ().onValueChanged.RemoveListener (OnScrollValueChanged);
 		}
 	}
 
-	private void OnScrollValueChanged(Vector2 newScrollValue)
+	private void OnScrollValueChanged (Vector2 newScrollValue)
 	{
 		// skip if not paginated results, or if no items, or if busy already loading next page of results
-		if (!_isPaginated || _totalCount==0 || _isLoadingNextPage) 
-		{
+		if (!_isPaginated || _totalCount == 0 || _isLoadingNextPage) {
 			return;
 		}
 		//Debug.Log (string.Format("Scroll y:{0} table view scroll: {1}/{2}", newScrollValue.y, _tableView.scrollY, _tableView.scrollableHeight));
 		float scrollY = _tableView.scrollableHeight - _tableView.scrollY;
 		float scrollBuffer = _infiniteScrollSize * _tableView.scrollableHeight;
 		// scrollY is still at 'top' and so no need to load anything at this point
-		if (scrollY > scrollBuffer)
-		{
+		if (scrollY > scrollBuffer) {
 			return;
 		}
 		// scrollY has reached 'bottom' minus buffer size
 		// only trigger request if there are more records to load
-		if (_skip < _totalCount)
-		{
+		if (_skip < _totalCount) {
 			_isLoadingNextPage = true;
 			_skip += _noPageResults;
 			//Debug.Log (string.Format("Load next page @{0} scroll: {1}<{2}", _skip, scrollY, scrollBuffer));
@@ -546,7 +518,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	}
 
 	// Tip: When infinite scrolling and using TSTableView's ReloadData() method I prefer to wrap "disable and enable scrollbar" calls around it to help prevent jumpy behaviour when continously dragging the scrollbar thumb.
-	private void SetInteractableScrollbars(bool isInteractable)
+	private void SetInteractableScrollbars (bool isInteractable)
 	{
 		Scrollbar[] scrollbars = _tableView.GetComponentsInChildren<Scrollbar> ();
 		foreach (Scrollbar scrollbar in scrollbars) {
@@ -560,7 +532,8 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// <summary>
 	/// Handler to go to next scene
 	/// </summary>
-	public void GoNextScene() {
+	public void GoNextScene ()
+	{
 		SceneManager.LoadScene ("InventoryDemo");
 	}
 }

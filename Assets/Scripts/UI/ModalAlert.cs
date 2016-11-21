@@ -3,9 +3,10 @@ using System.Collections;
 using UnityEngine.UI;
 using System;
 
-namespace Prefabs 
+namespace Prefabs
 {
-	public class ModalAlert : MonoBehaviour {
+	public class ModalAlert : MonoBehaviour
+	{
 
 		public Text titleBox;
 		public Text messageBox;
@@ -13,21 +14,21 @@ namespace Prefabs
 		/// <summary>
 		/// Modal alert
 		/// </summary>
-		public void Show(string message="", string title="Alert")
+		public void Show (string message = "", string title = "Alert")
 		{
 			// set message
 			titleBox.text = title;
 			messageBox.text = message;
 			// show alert
-			ShowModalAlert();
+			ShowModalAlert ();
 		}
 
-		public void Close()
+		public void Close ()
 		{
 			ShowModalAlert (false);
 		}
 
-		private void ShowModalAlert(bool show=true)
+		private void ShowModalAlert (bool show = true)
 		{
 			CanvasGroup modal = gameObject.GetComponent<CanvasGroup> ();
 			if (!show) {

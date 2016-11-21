@@ -12,24 +12,26 @@ using UnityEngine.SceneManagement;
 /// <summary>
 /// Virtual inventory item used to populate table cell
 /// </summary>
-public class InventoryItem {
+public class InventoryItem
+{
 	public string name;
 	public uint amount;
 }
 
-public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
+public class InventoryDemo : MonoBehaviour, ITableViewDataSource
+{
 
 	/// <remarks>
 	/// Enter your Azure App Service url
 	/// </remarks>
 
-	[Header("Azure App Service")]
+	[Header ("Azure App Service")]
 	// Azure Mobile App connection strings
 	[SerializeField]
 	private string _appUrl = "PASTE_YOUR_APP_URL";
 
 	// Go to https://developers.facebook.com/tools/accesstoken/ to generate a new access "User Token"
-	[Header("User Authentication")]
+	[Header ("User Authentication")]
 	[SerializeField]
 	private string _facebookAccessToken = "";
 
@@ -43,43 +45,45 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 	private Inventory _inventory;
 
 	// List of virtual items (inventory)
-	private List<InventoryItem> _items = new List<InventoryItem>();
+	private List<InventoryItem> _items = new List<InventoryItem> ();
 
-	[Header("UI")]
+	[Header ("UI")]
 	// TSTableView for displaying list of results
 	[SerializeField]
 	private TableView _tableView;
 	[SerializeField]
 	private InventoryCell _cellPrefab;
-	bool HasNewData = false; // to reload table view when data has changed
+	bool HasNewData = false;
+	// to reload table view when data has changed
 
-	[Space(10)]
+	[Space (10)]
 	[SerializeField]
-	private ModalAlert _modalAlert; 
+	private ModalAlert _modalAlert;
 	private Message _message;
 
 	// to show user's inventory after successful login
 	bool DidLogin = false;
 
 	// Use this for initialization
-	void Start () {
+	void Start ()
+	{
 		// Create App Service client
-		_client = new MobileServiceClient(_appUrl);
+		_client = new MobileServiceClient (_appUrl);
 
 		// Get App Service 'Highscores' table
-		_table = _client.GetTable<Inventory>("Inventory");
+		_table = _client.GetTable<Inventory> ("Inventory");
 
 		// set TSTableView delegate
 		_tableView.dataSource = this;
 
 		// setup token using Unity Inspector value
-		if (!String.IsNullOrEmpty(_facebookAccessToken)) {
-			InputField inputToken = GameObject.Find("FacebookAccessToken").GetComponent<InputField> ();
+		if (!String.IsNullOrEmpty (_facebookAccessToken)) {
+			InputField inputToken = GameObject.Find ("FacebookAccessToken").GetComponent<InputField> ();
 			inputToken.text = _facebookAccessToken;
 		}
 
 		// hide controls until login
-		CanvasGroup group = GameObject.Find("UserDataGroup").GetComponent<CanvasGroup> ();
+		CanvasGroup group = GameObject.Find ("UserDataGroup").GetComponent<CanvasGroup> ();
 		group.alpha = 0;
 		group.interactable = false;
 
@@ -87,150 +91,135 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 	}
 
 	// Update is called once per frame
-	void Update () 
+	void Update ()
 	{
 		// show controls after login
 		if (DidLogin) {
-			CanvasGroup group = GameObject.Find("UserDataGroup").GetComponent<CanvasGroup> ();
+			CanvasGroup group = GameObject.Find ("UserDataGroup").GetComponent<CanvasGroup> ();
 			group.alpha = 1;
 			group.interactable = true;
 			DidLogin = false;
 		}
 		// update editor fields and reload table data
 		if (HasNewData && _inventory != null) {
-			InputField strawberries = GameObject.Find("Input1").GetComponent<InputField> ();
-			InputField melons = GameObject.Find("Input2").GetComponent<InputField> ();
-			InputField lemons = GameObject.Find("Input3").GetComponent<InputField> ();
-			InputField medicine = GameObject.Find("Input4").GetComponent<InputField> ();
+			InputField strawberries = GameObject.Find ("Input1").GetComponent<InputField> ();
+			InputField melons = GameObject.Find ("Input2").GetComponent<InputField> ();
+			InputField lemons = GameObject.Find ("Input3").GetComponent<InputField> ();
+			InputField medicine = GameObject.Find ("Input4").GetComponent<InputField> ();
 			Debug.Log ("strawberries: " + _inventory.strawberries + " melons: " + _inventory.melons + " lemons: " + _inventory.lemons + " medicine: " + _inventory.medicine);
-			strawberries.text = _inventory.strawberries.ToString();
-			melons.text = _inventory.melons.ToString();
-			lemons.text = _inventory.lemons.ToString();
-			medicine.text = _inventory.medicine.ToString();
+			strawberries.text = _inventory.strawberries.ToString ();
+			melons.text = _inventory.melons.ToString ();
+			lemons.text = _inventory.lemons.ToString ();
+			medicine.text = _inventory.medicine.ToString ();
 			ReloadTableData ();
 			HasNewData = false;
 		}
 		// Display modal where there is a new message
 		if (_message != null) {
 			Debug.Log ("Show message:" + _message.message);
-			_modalAlert.Show(_message.message, _message.title);
+			_modalAlert.Show (_message.message, _message.title);
 			_message = null;
 		}
 	}
 
-	public void Login()
+	public void Login ()
 	{
-		StartCoroutine( _client.Login(MobileServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted) );
+		StartCoroutine (_client.Login (MobileServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted));
 	}
 
-	private void OnLoginCompleted(IRestResponse<MobileServiceUser> response)
+	private void OnLoginCompleted (IRestResponse<MobileServiceUser> response)
 	{
-		Debug.Log("Status: " + response.StatusCode + " Uri:" + response.Url );
-		Debug.Log("OnLoginCompleted: " + response.Content );
+		Debug.Log ("Status: " + response.StatusCode + " Uri:" + response.Url);
+		Debug.Log ("OnLoginCompleted: " + response.Content);
 
-		if ( response.StatusCode == HttpStatusCode.OK)
-		{
+		if (response.StatusCode == HttpStatusCode.OK) {
 			MobileServiceUser mobileServiceUser = response.Data;
 			_client.User = mobileServiceUser;
-			Debug.Log("Authorized UserId: " + _client.User.user.userId );
+			Debug.Log ("Authorized UserId: " + _client.User.user.userId);
 			DidLogin = true;
 			Load (); // auto load user data
-		}
-		else
-		{
-			Debug.Log("Authorization Error: " + response.StatusCode);
+		} else {
+			Debug.Log ("Authorization Error: " + response.StatusCode);
 			_message = Message.Create ("Login failed", "Error");
 		}
 	}
 
-	public void Load() 
+	public void Load ()
 	{
-		string filter = string.Format("userId eq '{0}'", _client.User.user.userId);
-		CustomQuery query = new CustomQuery(filter);
-		Debug.Log("Load data for UserId: " + _client.User.user.userId + " query:" + query );
+		string filter = string.Format ("userId eq '{0}'", _client.User.user.userId);
+		CustomQuery query = new CustomQuery (filter);
+		Debug.Log ("Load data for UserId: " + _client.User.user.userId + " query:" + query);
 
-		StartCoroutine( _table.Query<Inventory>(query, OnLoadCompleted) );
+		StartCoroutine (_table.Query<Inventory> (query, OnLoadCompleted));
 	}
 
-	private void OnLoadCompleted(IRestResponse<Inventory[]> response) 
+	private void OnLoadCompleted (IRestResponse<Inventory[]> response)
 	{
-		if (response.StatusCode == HttpStatusCode.OK)
-		{
-			Debug.Log("OnLoadItemsCompleted data: " + response.Content);
+		if (response.StatusCode == HttpStatusCode.OK) {
+			Debug.Log ("OnLoadItemsCompleted data: " + response.Content);
 			Inventory[] results = response.Data;
-			Debug.Log("Load results count: " + results.Length);
+			Debug.Log ("Load results count: " + results.Length);
 			// no record 
 			if (results.Length == 0) {
 				_inventory = new Inventory ();
 			}
 			if (results.Length >= 1) {
-				Debug.Log("inventory result: " + results[0]);
+				Debug.Log ("inventory result: " + results [0]);
 				_inventory = results [0];
 			}
 			HasNewData = true;
-		}
-		else
-		{
-			Debug.Log("Read Error Status:" + response.StatusCode + " Uri: "+response.Url );
+		} else {
+			Debug.Log ("Read Error Status:" + response.StatusCode + " Uri: " + response.Url);
 		}
 	}
 
-	public void Save() 
+	public void Save ()
 	{
-		if (_inventory == null) 
-		{
+		if (_inventory == null) {
 			Debug.Log ("Error, no inventory");
 			return;
 		}
 		// If new Insert, else Update existing user inventory
-		if ( String.IsNullOrEmpty(_inventory.id) ) 
-		{
-			InsertInventory();
-		} 
-		else 
-		{
-			UpdateInventory();
+		if (String.IsNullOrEmpty (_inventory.id)) {
+			InsertInventory ();
+		} else {
+			UpdateInventory ();
 		}
 	}
 
-	private void InsertInventory() 
+	private void InsertInventory ()
 	{
 		RecalculateInventoryItems ();
-		Debug.Log ("Insert:" + _inventory.ToString());
-		StartCoroutine( _table.Insert<Inventory>(_inventory, OnInsertCompleted) );
+		Debug.Log ("Insert:" + _inventory.ToString ());
+		StartCoroutine (_table.Insert<Inventory> (_inventory, OnInsertCompleted));
 	}
 
-	private void OnInsertCompleted(IRestResponse<Inventory> response) 
+	private void OnInsertCompleted (IRestResponse<Inventory> response)
 	{
-		if (response.StatusCode == HttpStatusCode.Created)
-		{
-			Debug.Log( "OnInsertItemCompleted: " + response.Data );
+		if (response.StatusCode == HttpStatusCode.Created) {
+			Debug.Log ("OnInsertItemCompleted: " + response.Data);
 			Inventory item = response.Data; // if successful the item will have an 'id' property value
 			_inventory = item;
 			_message = Message.Create ("Inventory saved", "Inserted"); // show confirmation message
-		}
-		else
-		{
-			Debug.Log("Insert Error Status:" + response.StatusCode +" "+ response.ErrorMessage + " Url: "+response.Url );
+		} else {
+			Debug.Log ("Insert Error Status:" + response.StatusCode + " " + response.ErrorMessage + " Url: " + response.Url);
 		}
 	}
 
-	private void UpdateInventory(){
-		RecalculateInventoryItems ();
-		Debug.Log ("Update:" + _inventory.ToString());
-		StartCoroutine( _table.Update<Inventory>(_inventory, OnUpdateCompleted) );
-	}
-
-	private void OnUpdateCompleted(IRestResponse<Inventory> response)
+	private void UpdateInventory ()
 	{
-		if (response.StatusCode == HttpStatusCode.OK)
-		{
-			Debug.Log("OnUpdateCompleted: " + response.Content );
+		RecalculateInventoryItems ();
+		Debug.Log ("Update:" + _inventory.ToString ());
+		StartCoroutine (_table.Update<Inventory> (_inventory, OnUpdateCompleted));
+	}
+
+	private void OnUpdateCompleted (IRestResponse<Inventory> response)
+	{
+		if (response.StatusCode == HttpStatusCode.OK) {
+			Debug.Log ("OnUpdateCompleted: " + response.Content);
 			_message = Message.Create ("Inventory saved", "Updated"); // show confirmation message
-		}
-		else
-		{
-			Debug.Log("Update Error Status:" + response.StatusCode +" "+ response.ErrorMessage + " Url: "+response.Url );
+		} else {
+			Debug.Log ("Update Error Status:" + response.StatusCode + " " + response.ErrorMessage + " Url: " + response.Url);
 		}
 	}
 
@@ -239,25 +228,25 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 	/// <summary>
 	/// Update inventory using input values
 	/// </summary>
-	private void RecalculateInventoryItems() 
+	private void RecalculateInventoryItems ()
 	{
 		if (_inventory == null) {
 			Debug.Log ("Error, no inventory");
 		}
-		InputField strawberries = GameObject.Find("Input1").GetComponent<InputField> ();
-		InputField melons = GameObject.Find("Input2").GetComponent<InputField> ();
-		InputField lemons = GameObject.Find("Input3").GetComponent<InputField> ();
-		InputField medicine = GameObject.Find("Input4").GetComponent<InputField> ();
-		_inventory.strawberries = Convert.ToUInt32(strawberries.text);
-		_inventory.melons = Convert.ToUInt32(melons.text);
-		_inventory.lemons = Convert.ToUInt32(lemons.text);
-		_inventory.medicine = Convert.ToUInt32(medicine.text);
+		InputField strawberries = GameObject.Find ("Input1").GetComponent<InputField> ();
+		InputField melons = GameObject.Find ("Input2").GetComponent<InputField> ();
+		InputField lemons = GameObject.Find ("Input3").GetComponent<InputField> ();
+		InputField medicine = GameObject.Find ("Input4").GetComponent<InputField> ();
+		_inventory.strawberries = Convert.ToUInt32 (strawberries.text);
+		_inventory.melons = Convert.ToUInt32 (melons.text);
+		_inventory.lemons = Convert.ToUInt32 (lemons.text);
+		_inventory.medicine = Convert.ToUInt32 (medicine.text);
 	}
 
 	/// <summary>
 	/// Handler for text changed event to update view state
 	/// </summary>
-	public void TextChanged() 
+	public void TextChanged ()
 	{
 		UpdateUI ();
 	}
@@ -265,27 +254,26 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 	/// <summary>
 	/// Method to manage UI view state
 	/// </summary>
-	private void UpdateUI() 
+	private void UpdateUI ()
 	{
 		// Activate login button if Facebook Access Token is entered
-		Button login = GameObject.Find("Login").GetComponent<Button> ();
-		_facebookAccessToken = GameObject.Find("FacebookAccessToken").GetComponent<InputField> ().text;
-		login.interactable = String.IsNullOrEmpty (_facebookAccessToken) ? false : true ;
+		Button login = GameObject.Find ("Login").GetComponent<Button> ();
+		_facebookAccessToken = GameObject.Find ("FacebookAccessToken").GetComponent<InputField> ().text;
+		login.interactable = String.IsNullOrEmpty (_facebookAccessToken) ? false : true;
 
 		// Close dialog if no message
-		if (_message == null) 
-		{
-			_modalAlert.Close();
+		if (_message == null) {
+			_modalAlert.Close ();
 		}
 	}
 
 	/// <summary>
 	/// Reloads table data
 	/// </summary>
-	private void ReloadTableData() 
+	private void ReloadTableData ()
 	{
 		// start with new list 
-		_items = new List<InventoryItem>();
+		_items = new List<InventoryItem> ();
 
 		if (_inventory == null) {
 			return;
@@ -295,12 +283,11 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 
 		// Inventory data model properties
 		string[] properties = { "strawberries", "melons", "lemons", "medicine" };
-		foreach (string property in properties) 
-		{
+		foreach (string property in properties) {
 			// Check property exists in data model then check amount value
 			if (Model.HasField (_inventory, property)) {
-				var x = Model.GetField(_inventory, property);
-				Nullable<uint> value = x.GetValue(_inventory) as Nullable<uint>;
+				var x = Model.GetField (_inventory, property);
+				Nullable<uint> value = x.GetValue (_inventory) as Nullable<uint>;
 				uint amount = value ?? 0;
 				// Only display items with 1 or more
 				if (amount > 0) {
@@ -308,47 +295,48 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 					item.name = property;
 					item.amount = amount;
 					// Add to table view list
-					_items.Add(item);
+					_items.Add (item);
 				}
 			}
 		}
 
 		// reload table data
-		_tableView.ReloadData();
+		_tableView.ReloadData ();
 	}
 
 	#endregion
 
 	#region ITableViewDataSource
 
-	public int GetNumberOfRowsForTableView(TableView tableView)
+	public int GetNumberOfRowsForTableView (TableView tableView)
 	{
 		return _items.Count;
 	}
 
-	public float GetHeightForRowInTableView(TableView tableView, int row)
+	public float GetHeightForRowInTableView (TableView tableView, int row)
 	{
 		return (_cellPrefab.transform as RectTransform).rect.height; //50.0f;
 	}
 
-	public TableViewCell GetCellForRowInTableView(TableView tableView, int row)
+	public TableViewCell GetCellForRowInTableView (TableView tableView, int row)
 	{
-		InventoryCell cell = tableView.GetReusableCell(_cellPrefab.reuseIdentifier) as InventoryCell;
+		InventoryCell cell = tableView.GetReusableCell (_cellPrefab.reuseIdentifier) as InventoryCell;
 		if (cell == null) {
 			cell = (InventoryCell)GameObject.Instantiate (_cellPrefab);
 		}
 		InventoryItem data = _items [row];
 		cell.Name.text = data.name;
-		cell.Amount.text = data.amount.ToString();
+		cell.Amount.text = data.amount.ToString ();
 		cell.Icon.sprite = LoadImage (data.name);
-		cell.Btn.name = row.ToString(); // save index to button name
+		cell.Btn.name = row.ToString (); // save index to button name
 		return cell;
 	}
 
 	#endregion
 
-	public Sprite LoadImage(string filename) {
-		Texture2D texture = Resources.Load(filename) as Texture2D;
+	public Sprite LoadImage (string filename)
+	{
+		Texture2D texture = Resources.Load (filename) as Texture2D;
 		if (texture == null) {
 			return null;
 		}
@@ -360,7 +348,8 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 	/// <summary>
 	/// Handler to go to next scene
 	/// </summary>
-	public void GoNextScene() {
+	public void GoNextScene ()
+	{
 		SceneManager.LoadScene ("HighscoresDemo");
 	}
 }
