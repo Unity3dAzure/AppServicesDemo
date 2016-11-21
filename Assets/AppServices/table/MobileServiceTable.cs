@@ -72,10 +72,10 @@ namespace Unity3dAzure.AppServices
             {
                 id = model.GetId();
             }
-            else if ( Model.HasProperty(item, "id") ) 
+			else if ( Model.HasField(item, "id") ) 
             {
-				var x = Model.GetProperty(item, "id");
-                id = x.GetValue(item, null) as string;
+				var x = Model.GetField(item, "id");
+                id = x.GetValue(item) as string;
             }
             else
             {

@@ -14,7 +14,7 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class InventoryItem {
 	public string name;
-	public int amount;
+	public uint amount;
 }
 
 public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
@@ -298,10 +298,10 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 		foreach (string property in properties) 
 		{
 			// Check property exists in data model then check amount value
-			if (Model.HasProperty (_inventory, property)) {
-				var x = Model.GetProperty(_inventory, property);
-				Nullable<int> value = x.GetValue(_inventory, null) as Nullable<int>;
-				int amount = value ?? 0;
+			if (Model.HasField (_inventory, property)) {
+				var x = Model.GetField(_inventory, property);
+				Nullable<uint> value = x.GetValue(_inventory) as Nullable<uint>;
+				uint amount = value ?? 0;
 				// Only display items with 1 or more
 				if (amount > 0) {
 					InventoryItem item = new InventoryItem ();

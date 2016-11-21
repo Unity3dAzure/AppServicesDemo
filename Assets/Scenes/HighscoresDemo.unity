@@ -4242,8 +4242,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dcdeb5277262475c858002ec725ae70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _appUrl: http://unitydemoz.azurewebsites.net
-  _facebookAccessToken: EAAKlV2z3byABAP0CGjCtusFVpbUZAbZCmcaipriPpstNzcE0aFUCjdoqILsTIQPV1WyScUZBbw8hEn9wwnRKt5V6Xspt244HSb1yFS5CZCXgXiWPpeMV4XwXCGLSSf6ZCQEogUDTU6FhVw428ezSKZAzbP1jVy7aVaj65nVWFZCZBwZDZD
+  _appUrl: YOUR_APP_URL
+  _facebookAccessToken: 
   _tableView: {fileID: 371080080}
   _cellPrefab: {fileID: 784713177}
   _modalAlert: {fileID: 1389452106}
