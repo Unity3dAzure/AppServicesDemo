@@ -14,7 +14,6 @@ namespace Tacticsoft
     /// - Child GameObject + Vertical Layout Group
     /// This class should be after Unity's internal UI components in the Script Execution Order
     /// </summary>
-	[CLSCompliant(false)]
     [RequireComponent(typeof(ScrollRect))]
     public class TableView : MonoBehaviour
     {

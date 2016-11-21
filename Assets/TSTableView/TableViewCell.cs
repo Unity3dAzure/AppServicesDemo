@@ -8,7 +8,6 @@ namespace Tacticsoft
     /// The base class for cells in a TableView. ITableViewDataSource returns pointers
     /// to these objects
     /// </summary>
-	[CLSCompliant(false)]
     public class TableViewCell : MonoBehaviour
     {
         /// <summary>

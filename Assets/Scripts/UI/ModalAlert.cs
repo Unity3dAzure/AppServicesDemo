@@ -5,7 +5,6 @@ using System;
 
 namespace Prefabs 
 {
-	[CLSCompliant(false)]
 	public class ModalAlert : MonoBehaviour {
 
 		public Text titleBox;

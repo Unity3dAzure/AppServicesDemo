@@ -7,7 +7,6 @@ namespace Tacticsoft
     /// <summary>
     /// An interface for a data source to a TableView
     /// </summary>
-	[CLSCompliant(false)]
     public interface ITableViewDataSource
     {
         /// <summary>

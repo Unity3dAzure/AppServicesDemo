@@ -1145,7 +1145,7 @@ MonoBehaviour:
   onCellVisibilityChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Tacticsoft.TableView+CellVisibilityChangeEvent, Assembly-CSharp, Version=104.4.0.0,
+    m_TypeName: Tacticsoft.TableView+CellVisibilityChangeEvent, Assembly-CSharp, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &371080081
 MonoBehaviour:
@@ -2529,7 +2529,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000030517578}
+  m_AnchoredPosition: {x: 0, y: -0.000091552734}
   m_SizeDelta: {x: 0, y: 460}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &986425711
@@ -4242,8 +4242,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dcdeb5277262475c858002ec725ae70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _appUrl: YOUR_APP_URL
-  _facebookAccessToken: 
+  _appUrl: http://unitydemoz.azurewebsites.net
+  _facebookAccessToken: EAAKlV2z3byABAP0CGjCtusFVpbUZAbZCmcaipriPpstNzcE0aFUCjdoqILsTIQPV1WyScUZBbw8hEn9wwnRKt5V6Xspt244HSb1yFS5CZCXgXiWPpeMV4XwXCGLSSf6ZCQEogUDTU6FhVw428ezSKZAzbP1jVy7aVaj65nVWFZCZBwZDZD
   _tableView: {fileID: 371080080}
   _cellPrefab: {fileID: 784713177}
   _modalAlert: {fileID: 1389452106}

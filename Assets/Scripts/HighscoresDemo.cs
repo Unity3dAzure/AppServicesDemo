@@ -2,15 +2,14 @@
 using System;
 using System.Net;
 using System.Collections.Generic;
-using RestSharp;
-using Pathfinding.Serialization.JsonFx;
 using Unity3dAzure.AppServices;
 using UnityEngine.UI;
 using Tacticsoft;
 using Prefabs;
 using UnityEngine.SceneManagement;
+//using System.Linq;
+using System.Linq;
 
-[CLSCompliant(false)]
 public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 {
 	/// <remarks>
@@ -62,8 +61,8 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	// Use this for initialization
 	void Start ()
 	{
-		// Create App Service client (Using factory Create method to force 'https' url)
-		_client = MobileServiceClient.Create(_appUrl); //new MobileServiceClient(_appUrl);
+		// Create App Service client
+		_client = new MobileServiceClient(_appUrl);
 
 		// Get App Service 'Highscores' table
 		_table = _client.GetTable<Highscore>("Highscores");
@@ -85,7 +84,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	void Update () 
 	{
 		// Only update table when there is new data
-		if (HasNewData) {
+		if (_tableView != null && HasNewData) {
 			Debug.Log ("Refresh Table Data");
 			SetInteractableScrollbars (false);
 			_tableView.ReloadData ();
@@ -108,12 +107,12 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	public void Login()
 	{
-		_client.Login(MobileServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted);
+		StartCoroutine( _client.Login(MobileServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted) );
 	}
 
 	private void OnLoginCompleted(IRestResponse<MobileServiceUser> response)
 	{
-		Debug.Log("Status: " + response.StatusCode + " Uri:" + response.ResponseUri );
+		Debug.Log("Status: " + response.StatusCode + " Uri:" + response.Url );
 		Debug.Log("OnLoginCompleted: " + response.Content );
 
 		if ( response.StatusCode == HttpStatusCode.OK)
@@ -134,7 +133,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		Highscore score = GetScore ();
 		if ( Validate(score) )
 		{
-			_table.Insert<Highscore>(score, OnInsertCompleted);
+			StartCoroutine( _table.Insert<Highscore>(score, OnInsertCompleted) );
 		}
 	}
 
@@ -148,7 +147,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		}
 		else
 		{
-			Debug.Log("Insert Error Status:" + response.StatusCode + " Uri: "+response.ResponseUri );
+			Debug.Log("Insert Error Status:" + response.StatusCode + " Uri: "+response.Url );
 		}
 	}
 
@@ -157,7 +156,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		Highscore score = GetScore ();
 		if ( Validate(score) )
 		{
-			_table.Update<Highscore>(score, OnUpdateScoreCompleted);
+			StartCoroutine( _table.Update<Highscore>(score, OnUpdateScoreCompleted) );
 		}
 	}
 
@@ -169,14 +168,14 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		}
 		else
 		{
-			Debug.Log("Update Error Status:" + response.StatusCode +" "+ response.ErrorMessage + " Uri: "+response.ResponseUri );
+			Debug.Log("Update Error Status:" + response.StatusCode +" "+ response.ErrorMessage + " Uri: "+response.Url );
 		}
 	}
 
 	public void Delete()
 	{
 		Highscore score = GetScore ();
-		_table.Delete<Highscore>(score.id, OnDeleteCompleted);
+		StartCoroutine( _table.Delete<Highscore>(score.id, OnDeleteCompleted) );
 	}
 
 	private void OnDeleteCompleted(IRestResponse<Highscore> response)
@@ -187,51 +186,53 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		}
 		else
 		{
-			Debug.Log("Delete Error Status:" + response.StatusCode +" "+ response.ErrorMessage + " Uri: "+response.ResponseUri );
+			Debug.Log("Delete Error Status:" + response.StatusCode +" "+ response.ErrorMessage + " Uri: "+response.Url );
 		}
 	}
 
 	public void Read()
 	{
-		_table.Read<Highscore>(OnReadCompleted);
+		StartCoroutine (_table.Read<Highscore> (OnReadCompleted) );
 	}
 
-	private void OnReadCompleted(IRestResponse<List<Highscore>> response)
+	private void OnReadCompleted(IRestResponse<Highscore[]> response)
 	{
-		if (response.StatusCode == HttpStatusCode.OK)
+		if ( response.StatusCode.Equals( HttpStatusCode.OK ) )
 		{
-			Debug.Log("OnReadCompleted data: " + response.ResponseUri +" data: "+ response.Content);
-        	List<Highscore> items = response.Data;
-        	Debug.Log("Read items count: " + items.Count);
+			Debug.Log("OnReadCompleted data: " + response.Url +" data: "+ response.Content);
+        	Highscore[] items = response.Data;
+			Debug.Log("Read items count: " + items.Length);
 			_isPaginated = false; // default query has max. of 50 records and is not paginated so disable infinite scroll 
-			_scores = items;
+			_scores = items.ToList();
 			HasNewData = true;
 		}
 		else
 		{
-			Debug.Log("Read Error Status:" + response.StatusCode + " Uri: "+response.ResponseUri );
+			Debug.Log("Read Error Status:" + response.StatusCode + " Uri: "+response.Url );
 		}
 	}
 
 	private void OnReadNestedResultsCompleted(IRestResponse<NestedResults<Highscore>> response)
 	{
-		if (response.StatusCode == HttpStatusCode.OK)
+		Debug.Log (response.StatusCode + " CALLBACK: " + response.Content);
+		if ( response.StatusCode.Equals( HttpStatusCode.OK ))
 		{
-			Debug.Log("OnReadNestedResultsCompleted: " + response.ResponseUri +" data: "+ response.Content);
-			List<Highscore> items = response.Data.results;
+			Debug.Log("OnReadNestedResultsCompleted: " + response.Url +" data: "+ response.Content);
+			Highscore[] items = response.Data.results;
 			_totalCount = response.Data.count;
-			Debug.Log("Read items count: " + items.Count + "/" + response.Data.count);
+			Debug.Log("Read items count: " + items.Length + "/" + response.Data.count);
 			_isPaginated = true; // nested query will support pagination
 			if (_skip != 0) {
-				_scores.AddRange (items); // append results for paginated results
+				Debug.Log("TODO: append paginated results");
+				_scores.AddRange ( items.ToList() );
 			} else {
-				_scores = items; // set for first page of results
+				_scores = items.ToList(); // set for first page of results
 			}
 			HasNewData = true;
 		}
 		else
 		{
-			Debug.Log("Read Nested Results Error Status:" + response.StatusCode + " Uri: "+response.ResponseUri );
+			Debug.Log("Read Nested Results Error Status:" + response.StatusCode.ToString() + " Uri: "+response.Url );
 		}
 		_isLoadingNextPage = false; // allows next page to be loaded
 	}
@@ -246,9 +247,9 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	private void GetPageHighscores()
 	{
 		CustomQuery query = new CustomQuery ("", "score desc", _noPageResults, _skip, "id,username,score");
-		_table.Query<NestedResults<Highscore>>(query, OnReadNestedResultsCompleted);
+		StartCoroutine( _table.Query<NestedResults<Highscore>>(query, OnReadNestedResultsCompleted) );
 	}
-
+	
 	public void GetTopHighscores()
 	{
 		DateTime today = DateTime.Today;
@@ -271,7 +272,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	private void Query(CustomQuery query)
 	{
-		_table.Query<Highscore>(query, OnReadCompleted);
+		StartCoroutine( _table.Query<Highscore>(query, OnReadCompleted) );
 	}
 
 	/// <summary>
@@ -280,7 +281,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	public void Lookup()
 	{
 		Highscore score = GetScore ();
-		_table.Lookup<Highscore>(score.id, OnLookupCompleted);
+		StartCoroutine( _table.Lookup<Highscore>(score.id, OnLookupCompleted) );
 	}
 
 	private void OnLookupCompleted(IRestResponse<Highscore> response)
@@ -291,13 +292,13 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 			Highscore item = response.Data;
 			_score = item;
 			// show message with some details
-			string message = string.Format ("Scored {0} points on {1}", _score.score, _score.createdAt);
+			string message = string.Format ("Scored {0} points on {1}", _score.score, _score.CreatedAt());
 			_message = Message.Create(message, _score.username);
 		}
 		else
 		{
-			ResponseError err = JsonReader.Deserialize<ResponseError>(response.Content);
-			Debug.Log("Lookup Error Status:" + response.StatusCode + " Code:" + err.code.ToString() + " " + err.error);
+			//ResponseError err = JsonReader.Deserialize<ResponseError>(response.Content);
+			Debug.Log("Lookup Error Status:" + response.StatusCode );
 		}
 	}
 
@@ -308,12 +309,12 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// </summary>
 	public void Hello()
 	{
-		_client.InvokeApi<Message>("hello", Method.GET, OnCustomApiCompleted);
+		StartCoroutine( _client.InvokeApi<Message>("hello", Method.GET, OnCustomApiCompleted) );
 	}
 
 	public void GenerateScores()
 	{
-		_client.InvokeApi<Message>("GenerateScores", Method.POST, OnCustomApiCompleted);
+		StartCoroutine( _client.InvokeApi<Message>("GenerateScores", Method.POST, OnCustomApiCompleted) );
 	}
 
 	private void OnCustomApiCompleted(IRestResponse<Message> response)
@@ -327,10 +328,9 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		}
 		else
 		{
-			Debug.Log("Api Error Status:" + response.StatusCode + " Uri: "+response.ResponseUri );
+			Debug.Log("Api Error Status:" + response.StatusCode + " Uri: "+response.Url );
 		}
 	}
-
 	#endregion
 
 	#region UI
@@ -346,7 +346,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		Highscore highscore = new Highscore();
 		highscore.username = name;
 		if (!String.IsNullOrEmpty (score)) {
-			highscore.score = Convert.ToInt32 (score);
+			highscore.score = Convert.ToUInt32 (score);
 		}
 		if (!String.IsNullOrEmpty (id)) {
 			highscore.id = id;
@@ -496,7 +496,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// </summary>
 	public void OnSelectedRow(Button button) {
 		int index = Convert.ToInt32 (button.name);
-		//Debug.Log("Selected index:" + index);
+		//Debug.Log("Selected index:" + index); //Count
 		if (index >= _scores.Count) {
 			return;
 		}
@@ -514,7 +514,9 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	void OnDisable()
 	{
-		_tableView.GetComponent<ScrollRect>().onValueChanged.RemoveListener(OnScrollValueChanged);
+		if (_tableView != null) {
+			_tableView.GetComponent<ScrollRect>().onValueChanged.RemoveListener(OnScrollValueChanged);
+		}
 	}
 
 	private void OnScrollValueChanged(Vector2 newScrollValue)

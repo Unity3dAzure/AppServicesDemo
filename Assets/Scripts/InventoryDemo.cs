@@ -4,13 +4,19 @@ using System;
 using UnityEngine.UI;
 using Unity3dAzure.AppServices;
 using System.Collections.Generic;
-using RestSharp;
 using System.Net;
 using Tacticsoft;
 using Prefabs;
 using UnityEngine.SceneManagement;
 
-[CLSCompliant(false)]
+/// <summary>
+/// Virtual inventory item used to populate table cell
+/// </summary>
+public class InventoryItem {
+	public string name;
+	public int amount;
+}
+
 public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 
 	/// <remarks>
@@ -57,8 +63,8 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 
 	// Use this for initialization
 	void Start () {
-		// Create App Service client (Using factory Create method to force 'https' url)
-		_client = MobileServiceClient.Create(_appUrl); //new MobileServiceClient(_appUrl);
+		// Create App Service client
+		_client = new MobileServiceClient(_appUrl);
 
 		// Get App Service 'Highscores' table
 		_table = _client.GetTable<Inventory>("Inventory");
@@ -96,6 +102,7 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 			InputField melons = GameObject.Find("Input2").GetComponent<InputField> ();
 			InputField lemons = GameObject.Find("Input3").GetComponent<InputField> ();
 			InputField medicine = GameObject.Find("Input4").GetComponent<InputField> ();
+			Debug.Log ("strawberries: " + _inventory.strawberries + " melons: " + _inventory.melons + " lemons: " + _inventory.lemons + " medicine: " + _inventory.medicine);
 			strawberries.text = _inventory.strawberries.ToString();
 			melons.text = _inventory.melons.ToString();
 			lemons.text = _inventory.lemons.ToString();
@@ -113,12 +120,12 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 
 	public void Login()
 	{
-		_client.Login(MobileServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted);
+		StartCoroutine( _client.Login(MobileServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted) );
 	}
 
 	private void OnLoginCompleted(IRestResponse<MobileServiceUser> response)
 	{
-		Debug.Log("Status: " + response.StatusCode + " Uri:" + response.ResponseUri );
+		Debug.Log("Status: " + response.StatusCode + " Uri:" + response.Url );
 		Debug.Log("OnLoginCompleted: " + response.Content );
 
 		if ( response.StatusCode == HttpStatusCode.OK)
@@ -139,30 +146,32 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 	public void Load() 
 	{
 		string filter = string.Format("userId eq '{0}'", _client.User.user.userId);
-		Debug.Log("Load data for UserId: " + _client.User.user.userId );
 		CustomQuery query = new CustomQuery(filter);
-		_table.Query<Inventory>(query, OnLoadCompleted);
+		Debug.Log("Load data for UserId: " + _client.User.user.userId + " query:" + query );
+
+		StartCoroutine( _table.Query<Inventory>(query, OnLoadCompleted) );
 	}
 
-	private void OnLoadCompleted(IRestResponse<List<Inventory>> response) 
+	private void OnLoadCompleted(IRestResponse<Inventory[]> response) 
 	{
 		if (response.StatusCode == HttpStatusCode.OK)
 		{
 			Debug.Log("OnLoadItemsCompleted data: " + response.Content);
-			List<Inventory> results = response.Data;
-			Debug.Log("Load results count: " + results.Count);
+			Inventory[] results = response.Data;
+			Debug.Log("Load results count: " + results.Length);
 			// no record 
-			if (results.Count == 0) {
+			if (results.Length == 0) {
 				_inventory = new Inventory ();
 			}
-			if (results.Count >= 1) {
+			if (results.Length >= 1) {
+				Debug.Log("inventory result: " + results[0]);
 				_inventory = results [0];
 			}
 			HasNewData = true;
 		}
 		else
 		{
-			Debug.Log("Read Error Status:" + response.StatusCode + " Uri: "+response.ResponseUri );
+			Debug.Log("Read Error Status:" + response.StatusCode + " Uri: "+response.Url );
 		}
 	}
 
@@ -188,7 +197,7 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 	{
 		RecalculateInventoryItems ();
 		Debug.Log ("Insert:" + _inventory.ToString());
-		_table.Insert<Inventory>(_inventory, OnInsertCompleted);
+		StartCoroutine( _table.Insert<Inventory>(_inventory, OnInsertCompleted) );
 	}
 
 	private void OnInsertCompleted(IRestResponse<Inventory> response) 
@@ -202,14 +211,14 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 		}
 		else
 		{
-			Debug.Log("Insert Error Status:" + response.StatusCode +" "+ response.ErrorMessage + " Uri: "+response.ResponseUri );
+			Debug.Log("Insert Error Status:" + response.StatusCode +" "+ response.ErrorMessage + " Url: "+response.Url );
 		}
 	}
 
 	private void UpdateInventory(){
 		RecalculateInventoryItems ();
 		Debug.Log ("Update:" + _inventory.ToString());
-		_table.Update<Inventory>(_inventory, OnUpdateCompleted);
+		StartCoroutine( _table.Update<Inventory>(_inventory, OnUpdateCompleted) );
 	}
 
 	private void OnUpdateCompleted(IRestResponse<Inventory> response)
@@ -221,7 +230,7 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 		}
 		else
 		{
-			Debug.Log("Update Error Status:" + response.StatusCode +" "+ response.ErrorMessage + " Uri: "+response.ResponseUri );
+			Debug.Log("Update Error Status:" + response.StatusCode +" "+ response.ErrorMessage + " Url: "+response.Url );
 		}
 	}
 
@@ -239,10 +248,10 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 		InputField melons = GameObject.Find("Input2").GetComponent<InputField> ();
 		InputField lemons = GameObject.Find("Input3").GetComponent<InputField> ();
 		InputField medicine = GameObject.Find("Input4").GetComponent<InputField> ();
-		_inventory.strawberries = Convert.ToInt32(strawberries.text);
-		_inventory.melons = Convert.ToInt32(melons.text);
-		_inventory.lemons = Convert.ToInt32(lemons.text);
-		_inventory.medicine = Convert.ToInt32(medicine.text);
+		_inventory.strawberries = Convert.ToUInt32(strawberries.text);
+		_inventory.melons = Convert.ToUInt32(melons.text);
+		_inventory.lemons = Convert.ToUInt32(lemons.text);
+		_inventory.medicine = Convert.ToUInt32(medicine.text);
 	}
 
 	/// <summary>
@@ -281,6 +290,8 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 		if (_inventory == null) {
 			return;
 		}
+
+		Debug.Log ("Draw:" + _inventory);
 
 		// Inventory data model properties
 		string[] properties = { "strawberries", "melons", "lemons", "medicine" };
@@ -353,12 +364,3 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource {
 		SceneManager.LoadScene ("HighscoresDemo");
 	}
 }
-
-/// <summary>
-/// Virtual inventory item used to populate table cell
-/// </summary>
-public class InventoryItem {
-	public string name;
-	public int amount;
-}
-

@@ -6,7 +6,6 @@ using System;
 
 namespace Prefabs 
 {
-	[CLSCompliant(false)]
 	public class InventoryCell : TableViewCell 
 	{
 		public Image Icon;
