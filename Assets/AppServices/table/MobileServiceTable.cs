@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 using System;
-using UnityEngine.Networking;
 
 namespace Unity3dAzure.AppServices
 {
@@ -84,7 +82,7 @@ namespace Unity3dAzure.AppServices
             if (string.IsNullOrEmpty(id))
             {
                 Debug.LogError("Error 'id' value is missing");
-				yield break;
+				yield return null;
             }
 			string url = string.Format("{0}/{1}{2}/{3}", _client.AppUrl, URI_TABLES, _name, id);
 			ZumoRequest request = new ZumoRequest(_client, url, Method.PATCH);
