@@ -30,10 +30,10 @@ namespace Unity3dAzure.AppServices
 			Debug.Log ("App Url: " + AppUrl);
 
 			// required for running in Windows and Android
-#if !NETFX_CORE || UNITY_ANDROID
+			#if !NETFX_CORE || UNITY_ANDROID
 			Debug.Log ("ServerCertificateValidation");
 			ServicePointManager.ServerCertificateValidationCallback = RemoteCertificateValidationCallback;
-#endif
+			#endif
 		}
 
 		public override string ToString ()
@@ -96,7 +96,7 @@ namespace Unity3dAzure.AppServices
 		public IEnumerator InvokeApi<T> (string apiName, Method httpMethod, T body, Action<IRestResponse<T>> callback = null) where T : new()
 		{
 			string url = string.Format ("{0}/{1}{2}", AppUrl, URI_API, apiName);
-			Debug.Log (httpMethod.ToString () + " custom API Request Uri: " + url);
+			Debug.Log (httpMethod.ToString () + " custom API Request Url: " + url);
 			ZumoRequest request = new ZumoRequest (this, url, httpMethod);
 			request.AddBody<T> (body);
 			yield return request.request.Send ();
@@ -104,11 +104,11 @@ namespace Unity3dAzure.AppServices
 		}
 
 		/// <summary>
-		/// When you copy the URL is is 'http' by default, but it needs to be 'https'
+		/// When you copy the URL from the Azure Portal it is 'http' by default, but it needs to be 'https' for post
 		/// </summary>
 		private static string HttpsUri (string appUrl)
 		{
-			return Regex.Replace (appUrl, "(?m)http://", "https://").TrimEnd ('/');
+			return Regex.Replace (appUrl, "(?si)^http://", "https://").TrimEnd ('/');
 		}
 
 		#if !NETFX_CORE || UNITY_ANDROID

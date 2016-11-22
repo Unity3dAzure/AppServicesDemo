@@ -106,7 +106,7 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 			InputField melons = GameObject.Find ("Input2").GetComponent<InputField> ();
 			InputField lemons = GameObject.Find ("Input3").GetComponent<InputField> ();
 			InputField medicine = GameObject.Find ("Input4").GetComponent<InputField> ();
-			Debug.Log ("strawberries: " + _inventory.strawberries + " melons: " + _inventory.melons + " lemons: " + _inventory.lemons + " medicine: " + _inventory.medicine);
+			//Debug.Log ("strawberries: " + _inventory.strawberries + " melons: " + _inventory.melons + " lemons: " + _inventory.lemons + " medicine: " + _inventory.medicine);
 			strawberries.text = _inventory.strawberries.ToString ();
 			melons.text = _inventory.melons.ToString ();
 			lemons.text = _inventory.lemons.ToString ();
@@ -129,17 +129,15 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 
 	private void OnLoginCompleted (IRestResponse<MobileServiceUser> response)
 	{
-		Debug.Log ("Status: " + response.StatusCode + " Uri:" + response.Url);
-		Debug.Log ("OnLoginCompleted: " + response.Content);
-
-		if (response.StatusCode == HttpStatusCode.OK) {
+		if (!response.IsError) {
+			Debug.Log ("OnLoginCompleted: " + response.Content + " Status: " + response.StatusCode + " Url:" + response.Url);
 			MobileServiceUser mobileServiceUser = response.Data;
 			_client.User = mobileServiceUser;
 			Debug.Log ("Authorized UserId: " + _client.User.user.userId);
 			DidLogin = true;
 			Load (); // auto load user data
 		} else {
-			Debug.Log ("Authorization Error: " + response.StatusCode);
+			Debug.LogWarning ("Authorization Error: " + response.StatusCode);
 			_message = Message.Create ("Login failed", "Error");
 		}
 	}
@@ -155,7 +153,7 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 
 	private void OnLoadCompleted (IRestResponse<Inventory[]> response)
 	{
-		if (response.StatusCode == HttpStatusCode.OK) {
+		if (!response.IsError) {
 			Debug.Log ("OnLoadItemsCompleted data: " + response.Content);
 			Inventory[] results = response.Data;
 			Debug.Log ("Load results count: " + results.Length);
@@ -169,7 +167,7 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 			}
 			HasNewData = true;
 		} else {
-			Debug.Log ("Read Error Status:" + response.StatusCode + " Uri: " + response.Url);
+			Debug.LogWarning ("Read Error Status:" + response.StatusCode + " Url: " + response.Url);
 		}
 	}
 
@@ -196,13 +194,13 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 
 	private void OnInsertCompleted (IRestResponse<Inventory> response)
 	{
-		if (response.StatusCode == HttpStatusCode.Created) {
+		if (!response.IsError && response.StatusCode == HttpStatusCode.Created) {
 			Debug.Log ("OnInsertItemCompleted: " + response.Data);
 			Inventory item = response.Data; // if successful the item will have an 'id' property value
 			_inventory = item;
 			_message = Message.Create ("Inventory saved", "Inserted"); // show confirmation message
 		} else {
-			Debug.Log ("Insert Error Status:" + response.StatusCode + " " + response.ErrorMessage + " Url: " + response.Url);
+			Debug.LogWarning ("Insert Error Status:" + response.StatusCode + " " + response.ErrorMessage + " Url: " + response.Url);
 		}
 	}
 
@@ -215,11 +213,11 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 
 	private void OnUpdateCompleted (IRestResponse<Inventory> response)
 	{
-		if (response.StatusCode == HttpStatusCode.OK) {
+		if (!response.IsError) {
 			Debug.Log ("OnUpdateCompleted: " + response.Content);
 			_message = Message.Create ("Inventory saved", "Updated"); // show confirmation message
 		} else {
-			Debug.Log ("Update Error Status:" + response.StatusCode + " " + response.ErrorMessage + " Url: " + response.Url);
+			Debug.LogWarning ("Update Error Status:" + response.StatusCode + " " + response.ErrorMessage + " Url: " + response.Url);
 		}
 	}
 
@@ -278,8 +276,6 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 		if (_inventory == null) {
 			return;
 		}
-
-		Debug.Log ("Draw:" + _inventory);
 
 		// Inventory data model properties
 		string[] properties = { "strawberries", "melons", "lemons", "medicine" };

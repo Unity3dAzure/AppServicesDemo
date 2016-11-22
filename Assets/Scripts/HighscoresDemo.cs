@@ -115,15 +115,14 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	private void OnLoginCompleted (IRestResponse<MobileServiceUser> response)
 	{
-		Debug.Log ("Status: " + response.StatusCode + " Uri:" + response.Url);
-		Debug.Log ("OnLoginCompleted: " + response.Content);
+		Debug.Log ("OnLoginCompleted: " + response.Content + " Url:" + response.Url);
 
-		if (response.StatusCode == HttpStatusCode.OK) {
+		if (!response.IsError && response.StatusCode == HttpStatusCode.OK) {
 			MobileServiceUser mobileServiceUser = response.Data;
 			_client.User = mobileServiceUser;
 			Debug.Log ("Authorized UserId: " + _client.User.user.userId);
 		} else {
-			Debug.Log ("Authorization Error: " + response.StatusCode);
+			Debug.LogWarning ("Authorization Error: " + response.StatusCode);
 			_message = Message.Create ("Login failed", "Error");
 		}
 	}
@@ -138,12 +137,12 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	private void OnInsertCompleted (IRestResponse<Highscore> response)
 	{
-		if (response.StatusCode == HttpStatusCode.Created) {
-			Debug.Log ("OnInsertItemCompleted: " + response.Data);
+		if (!response.IsError && response.StatusCode == HttpStatusCode.Created) {
+			Debug.Log ("OnInsertItemCompleted: " + response.Content + " status code:" + response.StatusCode + " data:" + response.Data);
 			Highscore item = response.Data; // if successful the item will have an 'id' property value
 			_score = item;
 		} else {
-			Debug.Log ("Insert Error Status:" + response.StatusCode + " Uri: " + response.Url);
+			Debug.LogWarning ("Insert Error Status:" + response.StatusCode + " Url: " + response.Url);
 		}
 	}
 
@@ -157,10 +156,10 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	private void OnUpdateScoreCompleted (IRestResponse<Highscore> response)
 	{
-		if (response.StatusCode == HttpStatusCode.OK) {
+		if (!response.IsError) {
 			Debug.Log ("OnUpdateItemCompleted: " + response.Content);
 		} else {
-			Debug.Log ("Update Error Status:" + response.StatusCode + " " + response.ErrorMessage + " Uri: " + response.Url);
+			Debug.LogWarning ("Update Error Status:" + response.StatusCode + " " + response.ErrorMessage + " Url: " + response.Url);
 		}
 	}
 
@@ -172,10 +171,10 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	private void OnDeleteCompleted (IRestResponse<Highscore> response)
 	{
-		if (response.StatusCode == HttpStatusCode.OK) {
+		if (!response.IsError) {
 			Debug.Log ("OnDeleteItemCompleted");
 		} else {
-			Debug.Log ("Delete Error Status:" + response.StatusCode + " " + response.ErrorMessage + " Uri: " + response.Url);
+			Debug.LogWarning ("Delete Error Status:" + response.StatusCode + " " + response.ErrorMessage + " Url: " + response.Url);
 		}
 	}
 
@@ -186,55 +185,52 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	private void OnReadCompleted (IRestResponse<Highscore[]> response)
 	{
-		if (response.StatusCode.Equals (HttpStatusCode.OK)) {
-			Debug.Log ("OnReadCompleted data: " + response.Url + " data: " + response.Content);
+		if (!response.IsError) {
+			Debug.Log ("OnReadCompleted: " + response.Url + " data: " + response.Content);
 			Highscore[] items = response.Data;
-			Debug.Log ("Read items count: " + items.Length);
 			_isPaginated = false; // default query has max. of 50 records and is not paginated so disable infinite scroll 
 			_scores = items.ToList ();
 			HasNewData = true;
 		} else {
-			Debug.Log ("Read Error Status:" + response.StatusCode + " Uri: " + response.Url);
+			Debug.LogWarning ("Read Error Status:" + response.StatusCode + " Url: " + response.Url);
 		}
 	}
 
 	private void OnReadNestedResultsCompleted (IRestResponse<NestedResults<Highscore>> response)
 	{
-		Debug.Log (response.StatusCode + " CALLBACK: " + response.Content);
-		if (response.StatusCode.Equals (HttpStatusCode.OK)) {
+		if (!response.IsError) {
 			Debug.Log ("OnReadNestedResultsCompleted: " + response.Url + " data: " + response.Content);
 			Highscore[] items = response.Data.results;
 			_totalCount = response.Data.count;
 			Debug.Log ("Read items count: " + items.Length + "/" + response.Data.count);
 			_isPaginated = true; // nested query will support pagination
 			if (_skip != 0) {
-				Debug.Log ("TODO: append paginated results");
 				_scores.AddRange (items.ToList ());
 			} else {
 				_scores = items.ToList (); // set for first page of results
 			}
 			HasNewData = true;
 		} else {
-			Debug.Log ("Read Nested Results Error Status:" + response.StatusCode.ToString () + " Uri: " + response.Url);
+			Debug.LogWarning ("Read Nested Results Error Status:" + response.StatusCode.ToString () + " Url: " + response.Url);
 		}
 		_isLoadingNextPage = false; // allows next page to be loaded
 	}
 
 	public void GetAllHighscores ()
 	{
-		// reset
-		_skip = 0;
 		GetPageHighscores ();
 	}
 
 	private void GetPageHighscores ()
 	{
+		ResetList ();
 		CustomQuery query = new CustomQuery ("", "score desc", _noPageResults, _skip, "id,username,score");
 		StartCoroutine (_table.Query<NestedResults<Highscore>> (query, OnReadNestedResultsCompleted));
 	}
 
 	public void GetTopHighscores ()
 	{
+		ResetList ();
 		DateTime today = DateTime.Today;
 		string day = today.ToString ("s");
 		string filter = string.Format ("createdAt gt '{0}Z'", day);
@@ -246,6 +242,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	public void GetUsernameHighscore ()
 	{
+		ResetList ();
 		Highscore score = GetScore ();
 		string filter = string.Format ("username eq '{0}'", score.username);
 		string orderBy = "score desc";
@@ -256,6 +253,13 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	private void Query (CustomQuery query)
 	{
 		StartCoroutine (_table.Query<Highscore> (query, OnReadCompleted));
+	}
+
+	private void ResetList ()
+	{
+		_skip = 0;
+		_scores = new List<Highscore> ();
+		_tableView.ReloadData ();
 	}
 
 	/// <summary>
@@ -269,15 +273,14 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	private void OnLookupCompleted (IRestResponse<Highscore> response)
 	{
-		Debug.Log ("OnLookupItemCompleted: " + response.Content);
-		if (response.StatusCode == HttpStatusCode.OK) {
+		if (!response.IsError) {
 			Highscore item = response.Data;
 			_score = item;
 			// show message with some details
 			string message = string.Format ("Scored {0} points on {1}", _score.score, _score.CreatedAt ());
 			_message = Message.Create (message, _score.username);
 		} else {
-			//ResponseError err = JsonReader.Deserialize<ResponseError>(response.Content);
+			// TODO: Parse response error <ResponseError>(response.Content);
 			Debug.Log ("Lookup Error Status:" + response.StatusCode);
 		}
 	}
@@ -299,13 +302,13 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	private void OnCustomApiCompleted (IRestResponse<Message> response)
 	{
-		if (response.StatusCode == HttpStatusCode.OK) {
+		if (!response.IsError) {
 			Debug.Log ("OnCustomApiCompleted data: " + response.Content);
 			Message message = response.Data;
 			Debug.Log ("Result: " + message);
 			_message = message;
 		} else {
-			Debug.Log ("Api Error Status:" + response.StatusCode + " Uri: " + response.Url);
+			Debug.Log ("Api Error Status:" + response.StatusCode + " Url: " + response.Url);
 		}
 	}
 
@@ -370,12 +373,12 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		// Validate username
 		if (String.IsNullOrEmpty (highscore.username)) {
 			isUsernameValid = false;
-			Debug.Log ("Error, player username required");
+			Debug.LogWarning ("Error, player username required");
 		}
 		// Validate score
 		if (!(highscore.score > 0)) {
 			isScoreValid = false;
-			Debug.Log ("Error, player score should be greater than 0");
+			Debug.LogWarning ("Error, player score should be greater than 0");
 		}
 		UpdateText ("Player", isUsernameValid);
 		UpdateText ("Score", isScoreValid);
