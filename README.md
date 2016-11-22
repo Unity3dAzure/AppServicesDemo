@@ -93,12 +93,7 @@ module.exports = {
 * Inventory uses [pixel art icons designed by Henrique Lazarini](http://7soul1.deviantart.com/art/420-Pixel-Art-Icons-for-RPG-129892453)
 
 ## Dependencies included
-* [AppService](https://github.com/Unity3dAzure/AppServices) for Unity implements [UnityRestClient](https://github.com/ProjectStratus/UnityRestClient) which uses [JsonFx](https://bitbucket.org/TowerOfBricks/jsonfx-for-unity3d-git/) to parse JSON data.
+* [AppServices](https://github.com/Unity3dAzure/AppServices) for Unity.
 * [TSTableView](https://bitbucket.org/tacticsoft/tstableview) is used to display recyclable list of results.
-
-## Supports
-* iOS
-* Android
-* Windows
 
 Questions or tweet #Azure #GameDev [@deadlyfingers](https://twitter.com/deadlyfingers)
