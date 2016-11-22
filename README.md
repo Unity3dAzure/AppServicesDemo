@@ -92,16 +92,16 @@ module.exports = {
 * There is an issue with [PATCH on Android using UnityWebRequest with Azure App Services](http://answers.unity3d.com/questions/1230067/trying-to-use-patch-on-a-unitywebrequest-on-androi.html).
 Android doesn't support PATCH requests made with UnityWebRequest needed to perform Azure App Service updates. 
 One workaround is to enable the `X-HTTP-Method-Override` header. Here's the quick fix for App Services running node backend:
-  1. Install the "method-override" package.  
-  ```
-npm install method-override --save
-  ```
-  2. In 'app.js' file insert:  
-  ```
-var methodOverride = require('method-override');  
-// after the line "var app = express();" add  
-app.use(methodOverride('X-HTTP-Method-Override'));
-  ```
+    1. Install the "method-override" package.  
+        ```
+        npm install method-override --save
+        ```  
+    2. In 'app.js' file insert:  
+        ```
+        var methodOverride = require('method-override');  
+        // after the line "var app = express();" add  
+        app.use(methodOverride('X-HTTP-Method-Override'));
+        ```
 
 This will enable PATCH requests to be sent on Android.
 
