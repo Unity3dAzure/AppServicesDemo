@@ -218,12 +218,12 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	public void GetAllHighscores ()
 	{
+		ResetList ();
 		GetPageHighscores ();
 	}
 
 	private void GetPageHighscores ()
 	{
-		ResetList ();
 		CustomQuery query = new CustomQuery ("", "score desc", _noPageResults, _skip, "id,username,score");
 		StartCoroutine (_table.Query<NestedResults<Highscore>> (query, OnReadNestedResultsCompleted));
 	}
