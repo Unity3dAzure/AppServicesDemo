@@ -225,7 +225,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	private void GetPageHighscores ()
 	{
 		CustomQuery query = new CustomQuery ("", "score desc", _noPageResults, _skip, "id,username,score");
-		StartCoroutine (_table.Query<NestedResults<Highscore>> (query, OnReadNestedResultsCompleted));
+		StartCoroutine (_table.Query<Highscore> (query, OnReadNestedResultsCompleted));
 	}
 
 	public void GetTopHighscores ()
