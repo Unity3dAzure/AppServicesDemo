@@ -4,10 +4,9 @@ using UnityEngine.UI;
 using Tacticsoft;
 using System;
 
-namespace Prefabs 
+namespace Prefabs
 {
-	[CLSCompliant(false)]
-	public class InventoryCell : TableViewCell 
+	public class InventoryCell : TableViewCell
 	{
 		public Image Icon;
 		public Text Name;

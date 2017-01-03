@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using UnityEngine.SocialPlatforms;
+using UnityEngine.Profiling;
 
 namespace Tacticsoft
 {
@@ -14,7 +15,6 @@ namespace Tacticsoft
     /// - Child GameObject + Vertical Layout Group
     /// This class should be after Unity's internal UI components in the Script Execution Order
     /// </summary>
-	[CLSCompliant(false)]
     [RequireComponent(typeof(ScrollRect))]
     public class TableView : MonoBehaviour
     {

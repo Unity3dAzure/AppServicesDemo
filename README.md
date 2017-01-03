@@ -88,17 +88,28 @@ module.exports = {
 }
 
 ```
+## Known issues
+* There is an issue with [PATCH on Android using UnityWebRequest with Azure App Services](http://answers.unity3d.com/questions/1230067/trying-to-use-patch-on-a-unitywebrequest-on-androi.html).
+Android doesn't support PATCH requests made with UnityWebRequest needed to perform Azure App Service updates. 
+One workaround is to enable the `X-HTTP-Method-Override` header. Here's the quick fix for App Services running node backend:
+    1. Install the "method-override" package.  
+        ```
+        npm install method-override --save
+        ```  
+    2. In 'app.js' file insert:  
+        ```
+        var methodOverride = require('method-override');  
+        // after the line "var app = express();" add  
+        app.use(methodOverride('X-HTTP-Method-Override'));
+        ```
+
+This will enable PATCH requests to be sent on Android.
 
 ## Credits
 * Inventory uses [pixel art icons designed by Henrique Lazarini](http://7soul1.deviantart.com/art/420-Pixel-Art-Icons-for-RPG-129892453)
 
 ## Dependencies included
-* [AppService](https://github.com/Unity3dAzure/AppServices) for Unity implements [UnityRestClient](https://github.com/ProjectStratus/UnityRestClient) which uses [JsonFx](https://bitbucket.org/TowerOfBricks/jsonfx-for-unity3d-git/) to parse JSON data.
+* [AppServices](https://github.com/Unity3dAzure/AppServices) for Unity.
 * [TSTableView](https://bitbucket.org/tacticsoft/tstableview) is used to display recyclable list of results.
-
-## Supports
-* iOS
-* Android
-* Windows
 
 Questions or tweet #Azure #GameDev [@deadlyfingers](https://twitter.com/deadlyfingers)

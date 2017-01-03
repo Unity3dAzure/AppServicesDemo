@@ -4,11 +4,9 @@ using UnityEngine.UI;
 using Tacticsoft;
 using System;
 
-
-namespace Prefabs 
+namespace Prefabs
 {
-	[CLSCompliant(false)]
-	public class ScoreCell : TableViewCell 
+	public class ScoreCell : TableViewCell
 	{
 		public Text Rank;
 		public Text Score;

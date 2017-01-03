@@ -1,25 +1,18 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System;
+﻿using System;
+using Unity3dAzure.AppServices;
 
-public class Inventory
+[Serializable]
+public class Inventory : DataModel 
 {
-	public string id { get; set; }
-
-	public int strawberries { get; set; }
-	public int melons { get; set; }
-	public int lemons { get; set; }
-	public int medicine { get; set; }
+	public uint strawberries;
+	public uint melons;
+	public uint lemons;
+	public uint medicine;
 
 	public Inventory() {
 		this.strawberries = 0;
 		this.melons = 0;
 		this.lemons = 0;
 		this.medicine = 0;
-	}
-
-	public override string ToString()
-	{
-		return string.Format("id: {0} inventory: {1},{2},{3},{4}", id, strawberries, melons, lemons, medicine );
 	}
 }
