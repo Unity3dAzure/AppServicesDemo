@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using UnityEngine.SocialPlatforms;
+using UnityEngine.Profiling;
 
 namespace Tacticsoft
 {
