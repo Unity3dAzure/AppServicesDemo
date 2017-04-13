@@ -12,10 +12,14 @@ Contains a Unity 5 project featuring two demo scenes for Azure App Services (pre
 * Query for today's top ten highscores (daily leaderboard)
 * Query for username (user's scores)
 
+[![App Services Highscores Unity demo video](https://j.gifs.com/Y6J0oK.gif)](https://youtu.be/R8adpelztJA)
+
 ## Inventory demo features
 * Client-directed login with Facebook
 * Load User's inventory.
 * Save User's inventory. (Inserts if new or Updates existing record)
+
+[![App Services Inventory Unity demo video](https://j.gifs.com/lOyLn6.gif)](https://youtu.be/R8adpelztJA)
 
 ## Developer blogs
 - [How to setup Azure App Services to create Unity highscores leaderboard](http://www.deadlyfingers.net/azure/azure-app-services-for-unity3d/).
