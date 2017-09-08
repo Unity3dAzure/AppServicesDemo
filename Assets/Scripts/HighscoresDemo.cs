@@ -26,7 +26,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	private string _facebookAccessToken = "";
 
 	// App Service Rest Client
-	private MobileServiceClient _client;
+	private AppServiceClient _client;
 
 	// App Service Table defined using a DataModel
 	private MobileServiceTable<Highscore> _table;
@@ -66,7 +66,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	void Start ()
 	{
 		// Create App Service client
-		_client = new MobileServiceClient (_appUrl);
+		_client = new AppServiceClient (_appUrl);
 
 		// Get App Service 'Highscores' table
 		_table = _client.GetTable<Highscore> ("Highscores");
@@ -94,7 +94,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 			SetInteractableScrollbars (true);
 			HasNewData = false;
 		}
-		// Display new score details 
+		// Display new score details
 		if (_score != null) {
 			Debug.Log ("Show score:" + _score.ToString ());
 			DisplayScore (_score);
@@ -110,15 +110,15 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	public void Login ()
 	{
-		StartCoroutine (_client.Login (MobileServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted));
+		StartCoroutine (_client.Login (AppServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted));
 	}
 
-	private void OnLoginCompleted (IRestResponse<MobileServiceUser> response)
+	private void OnLoginCompleted (IRestResponse<AppServiceUser> response)
 	{
 		Debug.Log ("OnLoginCompleted: " + response.Content + " Url:" + response.Url);
 
 		if (!response.IsError && response.StatusCode == HttpStatusCode.OK) {
-			MobileServiceUser mobileServiceUser = response.Data;
+			AppServiceUser mobileServiceUser = response.Data;
 			_client.User = mobileServiceUser;
 			Debug.Log ("Authorized UserId: " + _client.User.user.userId);
 		} else {
@@ -295,6 +295,11 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		StartCoroutine (_client.InvokeApi<Message> ("hello", Method.GET, OnCustomApiCompleted));
 	}
 
+	public void HelloFunction()
+	{
+		StartCoroutine (_client.InvokeApi<Message> ("LeaderBoard?code=fEajfD2lrmOwILZtNcOFAA9OVaJmgPheBfa6/2gMakPkSGRobym1Uw==", Method.GET, OnCustomApiCompleted));
+	}
+
 	public void GenerateScores ()
 	{
 		StartCoroutine (_client.InvokeApi<Message> ("GenerateScores", Method.POST, OnCustomApiCompleted));
@@ -337,7 +342,7 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	}
 
 	/// <summary>
-	/// Update UI with data model 
+	/// Update UI with data model
 	/// </summary>
 	private void DisplayScore (Highscore highscore)
 	{

@@ -13,18 +13,18 @@ using System.Net.Security;
 
 namespace Unity3dAzure.AppServices
 {
-	public class MobileServiceClient : IAzureMobileServiceClient
+	public class AppServiceClient : IAppServiceClient
 	{
 		public string AppUrl { get; private set; }
 
-		public MobileServiceUser User { get; set; }
+		public AppServiceUser User { get; set; }
 
 		public const string URI_API = "api/";
 
 		/// <summary>
 		/// Creates a new RestClient using Azure App Service's Application Url
 		/// </summary>
-		public MobileServiceClient (string appUrl)
+		public AppServiceClient (string appUrl)
 		{
 			AppUrl = HttpsUri (appUrl);
 			Debug.Log ("App Url: " + AppUrl);
@@ -49,7 +49,7 @@ namespace Unity3dAzure.AppServices
 		/// <summary>
 		/// Client-directed single sign on (POST with access token)
 		/// </summary>
-		public IEnumerator Login (MobileServiceAuthenticationProvider provider, string token, Action<IRestResponse<MobileServiceUser>> callback = null)
+		public IEnumerator Login (AppServiceAuthenticationProvider provider, string token, Action<IRestResponse<AppServiceUser>> callback = null)
 		{
 			string p = provider.ToString ().ToLower ();
 			string url = string.Format ("{0}/.auth/login/{1}", AppUrl, p);
@@ -57,7 +57,7 @@ namespace Unity3dAzure.AppServices
 			ZumoRequest request = new ZumoRequest (this, url, Method.POST);
 			request.AddBodyAccessToken (token);
 			yield return request.request.Send ();
-			request.ParseJson<MobileServiceUser> (callback);
+			request.ParseJson<AppServiceUser> (callback);
 		}
 
 		/// <summary>

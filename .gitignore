@@ -48,3 +48,7 @@ sysinfo.txt
 
 # OS generated
 .DS_Store
+
+# Visual Studio and Visual Studio Code Settings
+.vscode/
+.vs/

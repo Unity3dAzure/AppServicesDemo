@@ -36,7 +36,7 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 	private string _facebookAccessToken = "";
 
 	// App Service Rest Client
-	private MobileServiceClient _client;
+	private AppServiceClient _client;
 
 	// App Service Table defined using a DataModel
 	private MobileServiceTable<Inventory> _table;
@@ -68,7 +68,7 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 	void Start ()
 	{
 		// Create App Service client
-		_client = new MobileServiceClient (_appUrl);
+		_client = new AppServiceClient (_appUrl);
 
 		// Get App Service 'Highscores' table
 		_table = _client.GetTable<Inventory> ("Inventory");
@@ -124,14 +124,14 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 
 	public void Login ()
 	{
-		StartCoroutine (_client.Login (MobileServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted));
+		StartCoroutine (_client.Login (AppServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted));
 	}
 
-	private void OnLoginCompleted (IRestResponse<MobileServiceUser> response)
+	private void OnLoginCompleted (IRestResponse<AppServiceUser> response)
 	{
 		if (!response.IsError) {
 			Debug.Log ("OnLoginCompleted: " + response.Content + " Status: " + response.StatusCode + " Url:" + response.Url);
-			MobileServiceUser mobileServiceUser = response.Data;
+			AppServiceUser mobileServiceUser = response.Data;
 			_client.User = mobileServiceUser;
 			Debug.Log ("Authorized UserId: " + _client.User.user.userId);
 			DidLogin = true;

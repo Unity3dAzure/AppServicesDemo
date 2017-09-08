@@ -1,6 +1,6 @@
 ﻿namespace Unity3dAzure.AppServices
 {
-	public enum MobileServiceAuthenticationProvider
+	public enum AppServiceAuthenticationProvider
 	{
 		MicrosoftAccount = 0,
 		Google = 1,
