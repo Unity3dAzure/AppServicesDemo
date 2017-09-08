@@ -6,12 +6,12 @@ namespace Unity3dAzure.AppServices
 {
 	public class MobileServiceTable<E> : IAzureMobileServiceTable
 	{
-		private MobileServiceClient _client;
+		private AppServiceClient _client;
 		private string _name;
         
 		public const string URI_TABLES = "tables/";
 
-		public MobileServiceTable (string tableName, MobileServiceClient client)
+		public MobileServiceTable (string tableName, AppServiceClient client)
 		{
 			_client = client;
 			_name = tableName; // NB: The table name could be infered from the Table's DataModel using typeof(E).Name; but passing Table name as a string allows for the case when the Classname is not the same as the Table name.

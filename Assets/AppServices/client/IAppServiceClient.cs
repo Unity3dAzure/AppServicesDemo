@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace Unity3dAzure.AppServices
 {
-	public interface IAzureMobileServiceClient
+	public interface IAppServiceClient
 	{
 		MobileServiceTable<E> GetTable<E> (string tableName) where E : class;
 
@@ -11,7 +11,7 @@ namespace Unity3dAzure.AppServices
 		/// Client-directed login (sdk) for single sign on
 		/// https://msdn.microsoft.com/en-us/library/azure/jj710106.aspx
 		/// </summary>
-		IEnumerator Login (MobileServiceAuthenticationProvider provider, string token, Action<IRestResponse<MobileServiceUser>> callback = null);
+		IEnumerator Login (AppServiceAuthenticationProvider provider, string token, Action<IRestResponse<AppServiceUser>> callback = null);
 
 		/// <summary>
 		/// TODO: Service-directed login (webview)

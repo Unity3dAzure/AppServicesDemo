@@ -4,7 +4,7 @@ namespace Unity3dAzure.AppServices
 {
 	public sealed class ZumoRequest : RestRequest
 	{
-		public ZumoRequest (MobileServiceClient client, string url, Method httpMethod) : base (url, httpMethod)
+		public ZumoRequest (AppServiceClient client, string url, Method httpMethod) : base (url, httpMethod)
 		{
 			this.AddHeader ("ZUMO-API-VERSION", "2.0.0");
 			this.AddHeader ("Accept", "application/json");
