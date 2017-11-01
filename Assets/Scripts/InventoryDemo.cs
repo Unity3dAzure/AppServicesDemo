@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using Azure.AppServices;
+using RESTClient;
+using UnityEngine;
 using System.Collections;
 using System;
 using UnityEngine.UI;
-using Unity3dAzure.AppServices;
 using System.Collections.Generic;
 using System.Net;
 using Tacticsoft;
@@ -30,16 +31,27 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 	[SerializeField]
 	private string _appUrl = "PASTE_YOUR_APP_URL";
 
-	// Go to https://developers.facebook.com/tools/accesstoken/ to generate a new access "User Token"
 	[Header ("User Authentication")]
+	// Client-side login requires auth token from identity provider.
+	// NB: Remember to update Azure App Service authentication provider with your app key and secret and SAVE changes!
+
+	// Facebook - go to https://developers.facebook.com/tools/accesstoken/ to generate a "User Token".
+	[Header ("Facebook")]
 	[SerializeField]
-	private string _facebookAccessToken = "";
+	private string _facebookUserToken = "";
+
+	// Twitter auth - go to https://apps.twitter.com/ and select "Keys and Access Tokens" to generate a access "Access Token" and "Access Token Secret".
+	[Header ("Twitter")]
+	[SerializeField]
+	private string _twitterAccessToken = "";
+	[SerializeField]
+	private string _twitterTokenSecret = "";
 
 	// App Service Rest Client
-	private MobileServiceClient _client;
+	private AppServiceClient _client;
 
 	// App Service Table defined using a DataModel
-	private MobileServiceTable<Inventory> _table;
+	private AppServiceTable<Inventory> _table;
 
 	// Data
 	private Inventory _inventory;
@@ -68,19 +80,13 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 	void Start ()
 	{
 		// Create App Service client
-		_client = new MobileServiceClient (_appUrl);
+		_client = new AppServiceClient (_appUrl);
 
 		// Get App Service 'Highscores' table
 		_table = _client.GetTable<Inventory> ("Inventory");
 
 		// set TSTableView delegate
 		_tableView.dataSource = this;
-
-		// setup token using Unity Inspector value
-		if (!String.IsNullOrEmpty (_facebookAccessToken)) {
-			InputField inputToken = GameObject.Find ("FacebookAccessToken").GetComponent<InputField> ();
-			inputToken.text = _facebookAccessToken;
-		}
 
 		// hide controls until login
 		CanvasGroup group = GameObject.Find ("UserDataGroup").GetComponent<CanvasGroup> ();
@@ -124,15 +130,23 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 
 	public void Login ()
 	{
-		StartCoroutine (_client.Login (MobileServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted));
+		if (!string.IsNullOrEmpty(_facebookUserToken)) 
+		{
+			StartCoroutine (_client.LoginWithFacebook (_facebookUserToken, OnLoginCompleted));
+			return;
+		}
+		if (!string.IsNullOrEmpty(_twitterAccessToken) && !string.IsNullOrEmpty(_twitterTokenSecret)) 
+		{
+			StartCoroutine (_client.LoginWithTwitter (_twitterAccessToken, _twitterTokenSecret, OnLoginCompleted));
+			return;
+		}
+		Debug.LogWarning("Login requires Facebook or Twitter access tokens");
 	}
 
-	private void OnLoginCompleted (IRestResponse<MobileServiceUser> response)
+	private void OnLoginCompleted (IRestResponse<AuthenticatedUser> response)
 	{
 		if (!response.IsError) {
 			Debug.Log ("OnLoginCompleted: " + response.Content + " Status: " + response.StatusCode + " Url:" + response.Url);
-			MobileServiceUser mobileServiceUser = response.Data;
-			_client.User = mobileServiceUser;
 			Debug.Log ("Authorized UserId: " + _client.User.user.userId);
 			DidLogin = true;
 			Load (); // auto load user data
@@ -144,8 +158,8 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 
 	public void Load ()
 	{
-		string filter = string.Format ("userId eq '{0}'", _client.User.user.userId);
-		CustomQuery query = new CustomQuery (filter);
+		string filterPredicate = string.Format ("userId eq '{0}'", _client.User.user.userId);
+		TableQuery query = new TableQuery (filterPredicate);
 		Debug.Log ("Load data for UserId: " + _client.User.user.userId + " query:" + query);
 
 		StartCoroutine (_table.Query<Inventory> (query, OnLoadCompleted));
@@ -254,11 +268,6 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 	/// </summary>
 	private void UpdateUI ()
 	{
-		// Activate login button if Facebook Access Token is entered
-		Button login = GameObject.Find ("Login").GetComponent<Button> ();
-		_facebookAccessToken = GameObject.Find ("FacebookAccessToken").GetComponent<InputField> ().text;
-		login.interactable = String.IsNullOrEmpty (_facebookAccessToken) ? false : true;
-
 		// Close dialog if no message
 		if (_message == null) {
 			_modalAlert.Close ();
@@ -281,8 +290,8 @@ public class InventoryDemo : MonoBehaviour, ITableViewDataSource
 		string[] properties = { "strawberries", "melons", "lemons", "medicine" };
 		foreach (string property in properties) {
 			// Check property exists in data model then check amount value
-			if (Model.HasField (_inventory, property)) {
-				var x = Model.GetField (_inventory, property);
+			if (ReflectionHelper.HasField (_inventory, property)) {
+				var x = ReflectionHelper.GetField (_inventory, property);
 				Nullable<uint> value = x.GetValue (_inventory) as Nullable<uint>;
 				uint amount = value ?? 0;
 				// Only display items with 1 or more
