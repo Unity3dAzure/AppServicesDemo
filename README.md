@@ -4,6 +4,13 @@ Contains a Unity 5 project featuring two demo scenes for Azure App Services (pre
 1. Highscores demo scene
 2. Inventory demo scene
 
+## :octocat: Download instructions
+This project contains git submodule dependencies so use:  
+    `git clone --recursive https://github.com/Unity3dAzure/AppServicesDemo.git`  
+    
+Or if you've already done a git clone then use:  
+    `git submodule update --init --recursive`  
+
 ## Highscore demo features
 * Client-directed login with Facebook
 * Insert Highscore
@@ -113,7 +120,12 @@ This will enable PATCH requests to be sent on Android.
 * Inventory uses [pixel art icons designed by Henrique Lazarini](http://7soul1.deviantart.com/art/420-Pixel-Art-Icons-for-RPG-129892453)
 
 ## Dependencies included
-* [AppServices](https://github.com/Unity3dAzure/AppServices) for Unity.
 * [TSTableView](https://bitbucket.org/tacticsoft/tstableview) is used to display recyclable list of results.
+
+## Dependencies installed as git submodules 
+* [AppServices](https://github.com/Unity3dAzure/AppServices) for Unity.  
+* [RESTClient](https://github.com/Unity3dAzure/RESTClient) for Unity.  
+
+Refer to the download instructions above to install these submodules.
 
 Questions or tweet #Azure #GameDev [@deadlyfingers](https://twitter.com/deadlyfingers)
