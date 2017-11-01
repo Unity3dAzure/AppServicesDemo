@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using Azure.AppServices;
+using RESTClient;
+using UnityEngine;
 using System;
 using System.Net;
 using System.Collections.Generic;
-using Unity3dAzure.AppServices;
 using UnityEngine.UI;
 using Tacticsoft;
 using Prefabs;
@@ -20,16 +21,27 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	[SerializeField]
 	private string _appUrl = "PASTE_YOUR_APP_URL";
 
-	// Go to https://developers.facebook.com/tools/accesstoken/ to generate a new access "User Token"
 	[Header ("User Authentication")]
+	// Client-side login requires auth token from identity provider.
+	// NB: Remember to update Azure App Service authentication provider with your app key and secret and SAVE changes!
+
+	// Facebook - go to https://developers.facebook.com/tools/accesstoken/ to generate a "User Token".
+	[Header ("Facebook")]
 	[SerializeField]
-	private string _facebookAccessToken = "";
+	private string _facebookUserToken = "";
+
+	// Twitter auth - go to https://apps.twitter.com/ and select "Keys and Access Tokens" to generate a access "Access Token" and "Access Token Secret".
+	[Header ("Twitter")]
+	[SerializeField]
+	private string _twitterAccessToken = "";
+	[SerializeField]
+	private string _twitterTokenSecret = "";
 
 	// App Service Rest Client
-	private MobileServiceClient _client;
+	private AppServiceClient _client;
 
 	// App Service Table defined using a DataModel
-	private MobileServiceTable<Highscore> _table;
+	private AppServiceTable<Highscore> _table;
 
 	// List of highscores (leaderboard)
 	private List<Highscore> _scores = new List<Highscore> ();
@@ -66,19 +78,13 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	void Start ()
 	{
 		// Create App Service client
-		_client = new MobileServiceClient (_appUrl);
+		_client = new AppServiceClient (_appUrl);
 
 		// Get App Service 'Highscores' table
 		_table = _client.GetTable<Highscore> ("Highscores");
 
 		// set TSTableView delegate
 		_tableView.dataSource = this;
-
-		// setup token using Unity Inspector value
-		if (!String.IsNullOrEmpty (_facebookAccessToken)) {
-			InputField inputToken = GameObject.Find ("FacebookAccessToken").GetComponent<InputField> ();
-			inputToken.text = _facebookAccessToken;
-		}
 
 		UpdateUI ();
 	}
@@ -110,16 +116,24 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	public void Login ()
 	{
-		StartCoroutine (_client.Login (MobileServiceAuthenticationProvider.Facebook, _facebookAccessToken, OnLoginCompleted));
+		if (!string.IsNullOrEmpty(_facebookUserToken)) 
+		{
+			StartCoroutine (_client.LoginWithFacebook (_facebookUserToken, OnLoginCompleted));
+			return;
+		}
+		if (!string.IsNullOrEmpty(_twitterAccessToken) && !string.IsNullOrEmpty(_twitterTokenSecret)) 
+		{
+			StartCoroutine (_client.LoginWithTwitter (_twitterAccessToken, _twitterTokenSecret, OnLoginCompleted));
+			return;
+		}
+		Debug.LogWarning("Login requires Facebook or Twitter access tokens");
 	}
 
-	private void OnLoginCompleted (IRestResponse<MobileServiceUser> response)
+	private void OnLoginCompleted (IRestResponse<AuthenticatedUser> response)
 	{
 		Debug.Log ("OnLoginCompleted: " + response.Content + " Url:" + response.Url);
 
 		if (!response.IsError && response.StatusCode == HttpStatusCode.OK) {
-			MobileServiceUser mobileServiceUser = response.Data;
-			_client.User = mobileServiceUser;
 			Debug.Log ("Authorized UserId: " + _client.User.user.userId);
 		} else {
 			Debug.LogWarning ("Authorization Error: " + response.StatusCode);
@@ -224,7 +238,8 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 
 	private void GetPageHighscores ()
 	{
-		CustomQuery query = new CustomQuery ("", "score desc", _noPageResults, _skip, "id,username,score");
+		var orderBy = new OrderBy("score", SortDirection.desc);
+		TableQuery query = new TableQuery ("", _noPageResults, _skip, "id,username,score", TableSystemProperty.nil, false, orderBy);
 		StartCoroutine (_table.Query<Highscore> (query, OnReadNestedResultsCompleted));
 	}
 
@@ -233,10 +248,13 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 		ResetList ();
 		DateTime today = DateTime.Today;
 		string day = today.ToString ("s");
-		string filter = string.Format ("createdAt gt '{0}Z'", day);
-		Debug.Log ("filter:" + filter);
-		string orderBy = "score desc";
-		CustomQuery query = new CustomQuery (filter, orderBy, 10);
+		string filterPredicate = string.Format ("createdAt gt '{0}Z'", day);
+		Debug.Log ("filter:" + filterPredicate);
+		var orderBy = new OrderBy("score", SortDirection.desc);
+		//TableQuery query = new TableQuery (filterPredicate, 10, 0, null, TableSystemProperty.nil, false, orderBy);
+		TableQuery query = TableQuery.CreateWithOrderBy(orderBy);
+		query.Top = 10;
+		query.Filter = filterPredicate;
 		Query (query);
 	}
 
@@ -244,13 +262,14 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	{
 		ResetList ();
 		Highscore score = GetScore ();
-		string filter = string.Format ("username eq '{0}'", score.username);
-		string orderBy = "score desc";
-		CustomQuery query = new CustomQuery (filter, orderBy);
+		string filterPredicate = string.Format ("username eq '{0}'", score.username);
+		var orderBy = new OrderBy("score", SortDirection.desc);
+		TableQuery query = TableQuery.CreateWithOrderBy(orderBy);
+		query.Filter = filterPredicate;
 		Query (query);
 	}
 
-	private void Query (CustomQuery query)
+	private void Query (TableQuery query)
 	{
 		StartCoroutine (_table.Query<Highscore> (query, OnReadCompleted));
 	}
@@ -409,11 +428,6 @@ public class HighscoresDemo : MonoBehaviour, ITableViewDataSource
 	/// </summary>
 	private void UpdateUI ()
 	{
-		// Activate login button if Facebook Access Token is entered
-		Button login = GameObject.Find ("Login").GetComponent<Button> ();
-		_facebookAccessToken = GameObject.Find ("FacebookAccessToken").GetComponent<InputField> ().text;
-		login.interactable = String.IsNullOrEmpty (_facebookAccessToken) ? false : true;
-
 		// Insert or Update mode
 		Text id = GameObject.Find ("Id").GetComponent<Text> ();
 		GameObject insert = GameObject.Find ("GroupInsert");

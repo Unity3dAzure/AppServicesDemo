@@ -1,5 +1,5 @@
 ﻿using System;
-using Unity3dAzure.AppServices;
+using Azure.AppServices;
 
 [Serializable]
 public class Highscore : DataModel 

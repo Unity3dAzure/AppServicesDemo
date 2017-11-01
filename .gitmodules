@@ -1,0 +1,6 @@
+[submodule "Assets/Dependencies/AppServices"]
+	path = Assets/Dependencies/AppServices
+	url = https://github.com/Unity3dAzure/AppServices
+[submodule "Assets/Dependencies/RESTClient"]
+	path = Assets/Dependencies/RESTClient
+	url = https://github.com/Unity3dAzure/RESTClient
